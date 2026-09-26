@@ -89,10 +89,10 @@ test("F3: routing can be adjusted from meta audit", () => {
 
 // ── Test 5: API Version ────────────────────────────────────────────────────
 
-test("API version updated to 0.7.0", () => {
+test("API version updated to 0.8.0", () => {
   const content = "test";
   const result = fullAudit(content, { source_content: content });
-  assert(result.api_version === "0.7.0", `Expected 0.7.0, got ${result.api_version}`);
+  assert(result.api_version === "0.8.0", `Expected 0.8.0, got ${result.api_version}`);
 });
 
 // ── Summary ────────────────────────────────────────────────────────────────
