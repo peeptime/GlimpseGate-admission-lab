@@ -4,7 +4,7 @@
 
 Formerly: `Mercury Method Lab` · `Mercury Admission Lab`
 Repository: `peeptime/GlimpseGate-admission-lab`
-Version: `2.3.0`
+Version: `2.4.0`
 Latest release: [v2.2.0 SPEC-First + Shared Language](https://github.com/peeptime/GlimpseGate-admission-lab/releases/tag/v2.2.0)
 
 **Core Docs:** [SPEC.md](SPEC.md) · [CONTEXT.md](CONTEXT.md)

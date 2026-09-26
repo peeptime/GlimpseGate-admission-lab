@@ -193,6 +193,16 @@ docs/                     # Architecture docs, iteration guides
 
 ## 7. Acceptance Criteria
 
+### v2.4.0 Release Gate
+
+- [x] Every GUI audit path uses the SDK (`/api/v1/admission/*`, `/api/lite-audit`)
+- [x] Dashboard refuses cross-origin and non-JSON state changes; loopback Host only
+- [x] `npm test` includes the dashboard API contract test
+- [x] Route set unchanged apart from additions (diffed against 2.3.0)
+- [x] `check_dashboard_product.mjs` passes for the v3 architecture
+- [ ] Owner review of the v3 GUI on a real screen (manual QA used recorded responses)
+- [ ] Decide when to remove `/classic/`
+
 ### v2.3.0 Release Gate
 
 - [x] `npm run test` — includes evidence-chain and admission-hardening suites
@@ -260,6 +270,7 @@ These are non-negotiable boundaries. Violations require a major version bump.
 
 | Date | Version | Change |
 |------|---------|--------|
+| 2026-09-26 | 2.4.0 | Dashboard v3: SDK-backed admission API and contract UI, request guard + CSP, route table, node-network / fractal motion design, classic GUI at /classic/ |
 | 2026-09-26 | 2.3.0 | Restart after freeze: admission-contract evidence enforcement, source-ref classifier fix, reason explainability, SDK packaging + types, taxonomy audit, related-work re-verification |
 | 2026-05-20 | 2.2.0 | Added SPEC.md, CONTEXT.md, skill upgrades, legacy doc archive |
 | 2026-05-20 | 2.1.7 | Fidelity-stability optimizations, quickStabilityCheck, async auditWithStabilityCheck |

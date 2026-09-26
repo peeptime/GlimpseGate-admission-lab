@@ -1,8 +1,8 @@
 {
   "project_name": "GlimpseGate Admission Lab",
   "package_name": "@glimpsegate/admission-lab",
-  "version": "2.3.0",
-  "codename": "Restart: Admission Hardening",
+  "version": "2.4.0",
+  "codename": "Gate GUI v3",
   "status": "v2-admission-contract",
   "position": "A choice-gated knowledge admission protocol for deciding how AI-generated claims may enter memory.",
   "version_policy": {

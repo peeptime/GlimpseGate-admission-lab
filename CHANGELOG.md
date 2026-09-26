@@ -4,6 +4,39 @@
 
 Every release entry must carry an explicit provenance declaration. Legacy entries that cannot be reconstructed are marked as unverified instead of being silently treated as human-only.
 
+## 2.4.0 - Gate GUI v3 (2026-09-26)
+> Provenance: `[AI_GENERATED]` drafted_by: Claude (Hyperagent) at project_owner's request; humanReviewed: declined; reviewer: project_owner_pending; audit_ref: docs/DASHBOARD.md
+
+### Fixed
+
+- **GUI bypassed the SDK.** `/api/lite-audit` was a separate regex auditor, and `lite.html` had a third copy, so GUI routes could disagree with SDK routes and the 2.3.0 contract rule never reached GUI users. All GUI audits now go through SDK functions; `/api/lite-audit` keeps its response shape (superset) and is SDK-backed.
+- **No request guard (CSRF / DNS rebinding).** Any page in the same browser could POST `text/plain` to `/api/run` or `/api/artifact`. Loopback Host, same-origin state changes, and JSON content type are now required. HTML is served with a CSP.
+- **Static containment check** was not separator-aware (`dashboard-x` passed for `dashboard`).
+- **`goal-validator.mjs` ran its CLI on import**, printing help inside the dashboard and able to `process.exit(1)` the server.
+- Classic GUI inline `onclick` (blocked by the new CSP) replaced with a delegated listener.
+
+### Added
+
+- **Dashboard v3** (`dashboard/app/`): Gate / Library / System views; node-network visualization of the SDK decision tree; route glyphs; noise-driven quadtree and curl-noise background; admission-contract UI with explicit downgrade reasons; ⌘K palette; zh/en; motion levels with reduced-motion default. No build step, no dependencies, no network beyond the local server.
+- `POST /api/v1/admission/audit`, `POST /api/v1/admission/contract`, `GET /api/v1/admission/meta`, `GET /api/routes`.
+- `scripts/dashboard/{http,router,admission-api}.mjs`; `createDashboardServer()` export.
+- `scripts/test_dashboard_api.mjs` (in `npm test`): contract, admission, guard, router, and static tests.
+- `docs/DASHBOARD.md`.
+
+### Changed
+
+- Server dispatch: a 27-branch if-chain became a route table (identical route set plus 4 new routes, verified by diff).
+- SDK circular-reasoning detector absorbs the three phrases only the old lite rules had, so the SDK stays the single source of routing truth. `MERCURY_RULESET_VERSION` 2026.05.10.1 → 2026.09.26.1 (records audited under the old ruleset report `needsReaudit`).
+- The v2 GUI moved to `/classic/` (kept for one release).
+- `scripts/check_dashboard_product.mjs` rewritten for the v3 architecture (21 checks).
+- `lite.html` calls the same-origin API when served by the dashboard; from `file://` it uses its offline rules, as before.
+
+### Known Issues (v2.4.0)
+
+- Visual QA was manual (recorded API responses, all views, zh/en, one desktop size). No automated visual regression tests; the narrow-screen layout is CSS-only and was not screenshot-tested.
+- The offline rules in `lite.html` remain a separate implementation by necessity (no server). They can disagree with the SDK; the page labels which engine answered.
+- Classic-only features (onboarding wizard, notifications, full settings editor) are not in v3.
+
 ## 2.3.0 - Restart: Admission Hardening (2026-09-26)
 > Provenance: `[AI_GENERATED]` drafted_by: Claude (Hyperagent) at project_owner's request; humanReviewed: declined; reviewer: project_owner_pending; audit_ref: docs/ITERATION-GUIDE-2.3.0.md
 
