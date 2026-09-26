@@ -1,4 +1,4 @@
-# Mercury Routing Theory
+# GlimpseGate Routing Theory
 
 ```yaml
 provenance:
@@ -10,7 +10,7 @@ provenance:
   audit_ref: docs/PROOF-PACK-COVERAGE-MATRIX.md
 ```
 
-Mercury uses four routing decisions:
+GlimpseGate uses four routing decisions:
 
 ```text
 accept / revise / quarantine / discard
@@ -36,7 +36,7 @@ Five routes are not necessary yet because "human review required" is a review pa
 
 ## Decision Axes
 
-Mercury routes by four axes:
+GlimpseGate routes by four axes:
 
 | Axis | Low-Risk End | High-Risk End | Typical Failure Modes |
 |---|---|---|---|
@@ -84,6 +84,14 @@ The matrix records the default route, not an irreversible sentence. A stronger o
 | FM-20 | version_maturity_laundering | revise | accept | Version can document state, not prove maturity. |
 | FM-21 | builder_loop | revise | accept | Shipping is acceptable when it closes an existing gap. |
 | FM-22 | premature_positioning_memory | revise | accept | Positioning can remain draft until proof cases support it. |
+| FM-23 | multi_agent_memory_contamination | quarantine | revise | *Proposed 2.3.0.* Another agent's summary is not primary evidence; re-attach the original source. |
+| FM-24 | stale_truth_reuse | revise | accept | *Proposed 2.3.0.* Re-verify or relabel as historical. Matches the lifecycle control (expired / stale → revise + review). |
+| FM-25 | test_passing_but_wrong | revise | accept | *Proposed 2.3.0.* Narrow the claim to the tested scope. |
+| FM-26 | chart_overclaim | revise | accept | *Proposed 2.3.0.* Keep the data; rewrite the conclusion to what it supports. |
+| FM-27 | unresolved_reviewer_disagreement | quarantine | revise | *Proposed 2.3.0.* Matches the kernel: disagreement escalation → quarantine. |
+| FM-28 | audit_gaming_attempt | quarantine | — | *Proposed 2.3.0.* Matches anti-gaming gate: quarantine, or discard at critical severity. No upgrade path by rewording. |
+
+> Rows FM-23…FM-28 were missing before 2.3.0 although `docs/FAILURE-MODES.md` defined them. Routes are proposals aligned with existing kernel behavior where one exists; `human_reviewed: declined`. See `docs/ADMISSION-TAXONOMY.md` §2 for which failure modes the engine detects versus which are review vocabulary only.
 
 ## Decision Tree
 
@@ -118,4 +126,4 @@ Two auditors should be able to agree on:
 - which FM family is primary
 - whether the route is promotion, repair, isolation, or removal
 
-They do not need to agree on every secondary FM. Mercury should optimize for route consistency before label completeness.
+They do not need to agree on every secondary FM. GlimpseGate should optimize for route consistency before label completeness.

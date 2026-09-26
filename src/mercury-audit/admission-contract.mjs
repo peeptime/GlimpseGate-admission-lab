@@ -1,4 +1,6 @@
-export const ADMISSION_CONTRACT_VERSION = "2026.05.12.2";
+import { classifySourceRef } from "./source-credibility.mjs";
+
+export const ADMISSION_CONTRACT_VERSION = "2026.09.26.1";
 
 export const MEMORY_OBJECT_TYPES = [
   "fact",
@@ -81,8 +83,11 @@ export function buildAdmissionContract(evidenceChain, selection = {}, context = 
   const selectedChoiceId = normalizeChoiceId(selection.choice_id || selection.choiceId || selection.selected || "B");
   const selectedGapId = selection.gap_id || selection.gapId || firstGapId(chain);
   const selectedOption = findSelectedOption(chain.suggested_choices || [], selectedGapId, selectedChoiceId);
-  const policy = policyFor(selectedGapId, selectedChoiceId);
-  const admittedObject = buildAdmittedObject(chain, selection, policy);
+  const requestedPolicy = policyFor(selectedGapId, selectedChoiceId);
+  const requestedObjectType = normalizeObjectType(selection.object_type || selection.objectType || requestedPolicy.admission_mode);
+  const condition = evaluateEvidenceCondition(chain, selection, context, selectedGapId, requestedPolicy, requestedObjectType);
+  const policy = condition.met ? requestedPolicy : downgradedPolicy(requestedPolicy);
+  const admittedObject = buildAdmittedObject(chain, condition.met ? selection : { ...selection, object_type: undefined, objectType: undefined }, policy);
 
   return {
     contract_version: ADMISSION_CONTRACT_VERSION,
@@ -112,7 +117,15 @@ export function buildAdmissionContract(evidenceChain, selection = {}, context = 
       note: selection.note || ""
     },
     future_usage_policy: policy.future_usage_policy,
-    evidence_condition: policy.evidence_condition,
+    evidence_condition: requestedPolicy.evidence_condition,
+    evidence_condition_check: condition,
+    pending_upgrade: condition.met ? null : {
+      requested_object_type: requestedObjectType,
+      requested_usage: requestedPolicy.future_usage_policy,
+      admitted_as: policy.admission_mode,
+      requires: condition.missing,
+      note: "Choosing an evidence-seeking option records intent, not evidence. The object is admitted at the weaker level until the missing evidence is supplied."
+    },
     forbidden_uses: forbiddenUses(policy.future_usage_policy),
     recheck: {
       required: policy.future_usage_policy.requires_source_recheck,
@@ -147,6 +160,68 @@ function buildAdmittedObject(chain, selection, policy) {
     routing_decision_at_admission: chain.routing_decision || "revise",
     can_be_promoted_without_review: false
   };
+}
+
+// v2.3.0: enforce evidence_condition. Before this, choosing option A
+// (e.g. "Find independent evidence" on circular_reasoning) immediately produced
+// a fact with can_use_as_fact=true, although no evidence was ever supplied.
+// That is the confidence-laundering path ROUTING-THEORY.md says must not exist.
+function evaluateEvidenceCondition(chain, selection, context, gapId, policy, objectType) {
+  const grantsFact = policy.future_usage_policy.can_use_as_fact || objectType === "fact";
+  if (!grantsFact) {
+    return { required: policy.evidence_condition, applies: false, met: true, satisfied_by: "not_required", missing: [] };
+  }
+
+  const existingRefs = new Set((chain.evidence_nodes || []).map((node) => String(node.ref)));
+  const suppliedRefs = normalizeRefs(selection.evidence_refs ?? selection.evidenceRefs);
+  const qualifying = suppliedRefs
+    .map(classifySourceRef)
+    .filter((item) => item.rank >= 4 && item.level !== "ai_generated");
+  const independent = qualifying.filter((item) => !existingRefs.has(String(item.ref)));
+
+  const reviewer = selection.reviewer || context.reviewer || "";
+  const namedReview = String(selection.human_reviewed || "").toLowerCase() === "true"
+    && reviewer && !/pending/i.test(reviewer);
+
+  const needsIndependence = gapId === "circular_reasoning";
+  const evidenceOk = needsIndependence ? independent.length > 0 : qualifying.length > 0;
+  // Circular reasoning cannot be closed by review alone: a reviewer signing
+  // off on a self-referential proof is still self-referential.
+  const met = evidenceOk || (!needsIndependence && Boolean(namedReview));
+
+  const missing = [];
+  if (!met) {
+    if (needsIndependence) {
+      missing.push("evidence_refs: at least one primary or traceable source not already in the evidence chain and not AI-generated");
+    } else {
+      missing.push("evidence_refs: at least one primary or traceable, non-AI-generated source");
+      missing.push("or human_reviewed: \"true\" with a named (non-pending) reviewer");
+    }
+  }
+
+  return {
+    required: policy.evidence_condition,
+    applies: true,
+    met,
+    satisfied_by: evidenceOk ? "evidence_refs" : (met ? "named_review" : "none"),
+    qualifying_refs: (needsIndependence ? independent : qualifying).map((item) => item.ref),
+    missing
+  };
+}
+
+function downgradedPolicy(policy) {
+  const fallback = choicePolicy.B;
+  return {
+    ...fallback,
+    admission_mode: "hypothesis",
+    future_usage_policy: { ...fallback.future_usage_policy }
+  };
+}
+
+function normalizeRefs(value) {
+  if (!value) return [];
+  if (Array.isArray(value)) return value.filter(Boolean).map(String);
+  return [String(value)];
 }
 
 function policyFor(gapId, choiceId) {

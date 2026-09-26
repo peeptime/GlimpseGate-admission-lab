@@ -65,7 +65,7 @@ and an upgraded skill interface.
 
 ## Next Steps
 
-- **v2.3.0**: GitHub Actions CI (lint + test on push)
+- ~~**v2.3.0**: GitHub Actions CI (lint + test on push)~~ — CI already existed (`.github/workflows/ci.yml`, 3-OS matrix). 2.3.0 went to admission hardening instead; see `docs/ITERATION-GUIDE-2.3.0.md`.
 - **v2.4.0**: SDK v1.0 readiness (integration review gate)
 - **v3.0.0**: Breaking changes only when needed for upstream compatibility
 

@@ -33,21 +33,36 @@ const sourceLevels = [
 
 const floorRank = new Map(sourceLevels.map((level) => [level.id, level.rank]));
 
+// Token-boundary matching (v2.3.0). Earlier versions used bare substring
+// regexes, so refs such as "email:ceo", "meeting-detail" or "domain-expert-note"
+// matched /ai/ and were misclassified as ai_generated (failing the floor).
+const TOKEN = (words) => new RegExp(`(^|[^a-z0-9])(${words.join("|")})([^a-z0-9]|$)`);
+const PRIMARY = TOKEN(["official", "primary", "direct_user", "direct-user", "field-note", "field_note", "signed-review", "signed_review"]);
+const TRACEABLE_PREFIX = /(^|[^a-z0-9])(docs\/|pr:)/;
+const TRACEABLE = TOKEN(["conversation", "transcript", "commit", "github", "repo", "audit", "review-ledger", "issue", "pull"]);
+const SECONDARY = TOKEN(["paper", "arxiv", "article", "benchmark", "external", "report", "owasp", "nist", "w3c"]);
+const AI_GENERATED = TOKEN(["ai", "agent", "llm", "model", "summary", "generated", "ai-generated", "ai_generated"]);
+const DECLARED_LEVELS = new Map([
+  ["primary", { level: "primary_or_direct", rank: 5 }],
+  ["traceable", { level: "traceable", rank: 4 }],
+  ["secondary", { level: "secondary", rank: 3 }],
+  ["ai", { level: "ai_generated", rank: 2 }]
+]);
+
 export function classifySourceRef(ref = "") {
-  const text = String(ref).toLowerCase();
+  const text = String(ref).toLowerCase().trim();
   if (!text) return { level: "unknown", rank: 1, ref };
-  if (/(official|primary|direct_user|field-note|field_note|signed-review|signed_review)/.test(text)) {
-    return { level: "primary_or_direct", rank: 5, ref };
+  // Explicit declaration wins over guessing: "primary:...", "traceable:...",
+  // "secondary:...", "ai:...". Declared levels are recorded as such so a
+  // reviewer can see the level was asserted by the caller, not inferred.
+  const declared = /^([a-z]+)::/.exec(text);
+  if (declared && DECLARED_LEVELS.has(declared[1])) {
+    return { ...DECLARED_LEVELS.get(declared[1]), ref, declared: true };
   }
-  if (/(conversation|transcript|commit|github|repo|docs\/|audit|review-ledger|issue|pr:|pull)/.test(text)) {
-    return { level: "traceable", rank: 4, ref };
-  }
-  if (/(paper|arxiv|article|benchmark|external|report|owasp|nist|w3c)/.test(text)) {
-    return { level: "secondary", rank: 3, ref };
-  }
-  if (/(ai|agent|llm|model|summary|generated)/.test(text)) {
-    return { level: "ai_generated", rank: 2, ref };
-  }
+  if (PRIMARY.test(text)) return { level: "primary_or_direct", rank: 5, ref };
+  if (TRACEABLE_PREFIX.test(text) || TRACEABLE.test(text)) return { level: "traceable", rank: 4, ref };
+  if (SECONDARY.test(text)) return { level: "secondary", rank: 3, ref };
+  if (AI_GENERATED.test(text)) return { level: "ai_generated", rank: 2, ref };
   return { level: "unknown", rank: 1, ref };
 }
 

@@ -25,7 +25,7 @@ import {
   auditWithStabilityCheck
 } from "./fidelity-stability.mjs";
 
-export const MERCURY_AUDIT_API_VERSION = "0.7.0";
+export const MERCURY_AUDIT_API_VERSION = "0.8.0";
 
 export { applyPolicy, listPolicies, resolvePolicy };
 export {
@@ -275,7 +275,12 @@ function normalizePacket(packet, context) {
 
 function buildReasons(result) {
   const blockerReasons = result.blockers.map((blocker) => `${blocker.id}:${blocker.severity}`);
-  return blockerReasons.length ? blockerReasons : [result.decision_reason];
+  // v2.3.0: kernel controls can escalate the route without adding a blocker
+  // (e.g. source floor, lifecycle). Earlier versions then reported the
+  // structural "no refusal point" reason next to a non-accept route.
+  const controlReasons = (result.kernel_controls || []).map((control) => `control:${control}`);
+  const reasons = [...blockerReasons, ...controlReasons];
+  return reasons.length ? reasons : [result.decision_reason];
 }
 
 function buildProvenance(packet, context) {

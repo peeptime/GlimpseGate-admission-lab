@@ -4,7 +4,7 @@
 
 Formerly: `Mercury Method Lab` · `Mercury Admission Lab`
 Repository: `peeptime/GlimpseGate-admission-lab`
-Version: `2.2.0`
+Version: `2.3.0`
 Latest release: [v2.2.0 SPEC-First + Shared Language](https://github.com/peeptime/GlimpseGate-admission-lab/releases/tag/v2.2.0)
 
 **架构映射**：[HTML（人工阅读）](architecture.html) · [JSON（智能体使用）](architecture.json)
@@ -26,7 +26,7 @@ provenance:
 
 ## 一句话
 
-Mercury Admission Lab 是一个面向 LLM 输出、Agent 记忆和知识迁移材料的 **choice-gated knowledge admission protocol**。
+GlimpseGate Admission Lab 是一个面向 LLM 输出、Agent 记忆和知识迁移材料的 **choice-gated knowledge admission protocol**。
 
 它不替用户判断世界真伪,而是把 claim 进入知识库之前的认知选择过程结构化。
 
@@ -35,20 +35,20 @@ Mercury Admission Lab 是一个面向 LLM 输出、Agent 记忆和知识迁移�
 准入 = 这个内容是否值得被记住
 ```
 
-Mercury 只把第二件事作为核心问题。
+GlimpseGate 只把第二件事作为核心问题。
 
 ---
 
-## Mercury 产出什么
+## GlimpseGate 产出什么
 
-Mercury does not produce truth verdicts. Mercury produces structured admission choices.
+GlimpseGate does not produce truth verdicts. GlimpseGate produces structured admission choices.
 
 2.0.2 新增 **Admission Contract**:当用户选择 A/B/C 后,系统记录用户到底让什么对象进入记忆,以及未来能怎样使用。
 
 Admission Contract 会分开记录:
 
 - `source_material`:原始来源,必须可回看。
-- `model_framing`:Mercury 对材料的 claim 提取、证据排列和 confidence framing。
+- `model_framing`:GlimpseGate 对材料的 claim 提取、证据排列和 confidence framing。
 - `user_judgment`:用户选择了哪个选项,以及 review state。
 - `admitted_object`:最终允许进入知识库的对象。
 
@@ -70,7 +70,7 @@ reference
 
 ```text
 材料里提到 X
--> Mercury 高密度组织了 X
+-> GlimpseGate 高密度组织了 X
 -> 用户点了接受
 -> 知识库把 X 当事实使用
 ```
@@ -114,7 +114,7 @@ AI 输出 / 用户材料
 
 ## 已知边界
 
-Mercury Admission Lab 目前不声称:
+GlimpseGate Admission Lab 目前不声称:
 
 - 已被外部团队采用。
 - 已通过真实生产场景验证。
@@ -245,8 +245,8 @@ npm run benchmark:v2
 不让 AI 自己审计自己并批准自己
 不伪造 source_refs、audit_refs 或 human_reviewed:true
 不把捕获材料直接当作记忆
-不把 Mercury 的 framing 偷偷当成原材料事实
+不把 GlimpseGate 的 framing 偷偷当成原材料事实
 不定义会被 Agent gaming 的成功指标
 ```
 
-Mercury 的价值不是产出更多内容,而是让用户的知识准入选择变得结构化、可追踪,并且能约束后续使用。
+GlimpseGate 的价值不是产出更多内容,而是让用户的知识准入选择变得结构化、可追踪,并且能约束后续使用。
