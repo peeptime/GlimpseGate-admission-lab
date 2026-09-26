@@ -69,7 +69,7 @@ This file is the short cross-session handoff. Keep it under 120 lines. Do not pa
 - Run `npm run dashboard:check` before reading full dashboard files.
 - Run `npm run capture:check` before reading full Lite/capture implementation.
 - Run `validate:incr` and `index:incr` before full scans during exploration.
-- Read full `docs/ITERATION-GUIDE-0.9.md` only for disputed v0.9 acceptance criteria.
+- Read full `docs/ARCHIVED/ITERATION-GUIDE-0.9.md` only for disputed v0.9 acceptance criteria.
 - For README/changelog/version updates, inspect only the affected sections and release surfaces.
 - End long work with a short handoff here instead of relying on conversation memory.
 

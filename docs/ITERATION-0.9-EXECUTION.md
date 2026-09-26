@@ -6,7 +6,7 @@ provenance:
   ai_assisted: true
   human_reviewed: pending
   audited_by: Mercury Lab self-audit
-  audit_ref: docs/ITERATION-GUIDE-0.9.md
+  audit_ref: docs/ARCHIVED/ITERATION-GUIDE-0.9.md
 ```
 
 ## Objective

@@ -4,6 +4,59 @@
 
 Every release entry must carry an explicit provenance declaration. Legacy entries that cannot be reconstructed are marked as unverified instead of being silently treated as human-only.
 
+## 2.3.0 - Restart: Admission Hardening (2026-09-26)
+> Provenance: `[AI_GENERATED]` drafted_by: Claude (Hyperagent) at project_owner's request; humanReviewed: declined; reviewer: project_owner_pending; audit_ref: docs/ITERATION-GUIDE-2.3.0.md
+
+First iteration after the freeze since 2026-05-21. Focus: close gaps between what the method claims and what the code enforces.
+
+### Fixed
+
+- **Admission contract laundering path.** Choosing an evidence-seeking option (e.g. `circular_reasoning` → A "Find independent evidence") granted `object_type: fact` and `can_use_as_fact: true` with no evidence supplied. The declared `evidence_condition` is now enforced; unmet conditions admit as `hypothesis` with a `pending_upgrade` record. Circular reasoning additionally requires *independent* evidence; review alone cannot close it. `object_type` overrides cannot bypass the check.
+- **Source-ref classifier.** Substring matching classified `email:…`, `meeting-detail:…`, `domain-expert-note` as `ai_generated` (they contain "ai"). Now whole-token matching.
+- **Contradictory reasons.** A kernel control could escalate the route to `revise` while `reasons` still said "No refusal point triggered". `reasons` now includes `control:<name>` for each escalating control.
+- **Invalid package name.** `@GlimpseGate/admission-lab` → `@glimpsegate/admission-lab` (npm names must be lowercase).
+- **Archive was a copy.** Seven legacy iteration guides existed in both `docs/` and `docs/ARCHIVED/`; duplicates removed, references repointed.
+- **Route matrix gap.** FM-23…FM-28 were defined in FAILURE-MODES.md but had no route or family; proposed routes added (aligned with existing kernel behavior), families updated.
+
+### Added
+
+- `src/mercury-audit/index.d.ts` — TypeScript declarations for the stable SDK surface.
+- `package.json#files` / `types` / `main` / `exports` conditions — tarball shrinks from 441 files to 29.
+- Declared source levels: `primary::`, `traceable::`, `secondary::`, `ai::` prefixes (`declared: true` in the result).
+- `scripts/test_admission_hardening.mjs` (in `npm test`), `scripts/test_sdk_consumer.mjs` (pack → install → import, in CI).
+- `npm test` now also runs the evidence-chain suite; CI also runs `test:fidelity` and `test:consumer`.
+- `docs/SDK-QUICKSTART.md` — integration guide.
+- `docs/ADMISSION-TAXONOMY.md` — axis analysis of memory object types, FM implementation coverage, FM → ISO/IEC 25012 mapping, Admiralty-code comparison for source levels, and the key open question.
+- CONTEXT.md terms: evidence condition, pending upgrade, declared source level, naming (GlimpseGate vs. Mercury).
+
+### Changed
+
+- SDK API `0.7.0` → `0.8.0` (admission-contract behavior change; new fields `evidence_condition_check`, `pending_upgrade`). `ADMISSION_CONTRACT_VERSION` → `2026.09.26.1`.
+- `docs/RELATED-WORK.md` — citations re-verified; two titles corrected; MemSAD reframed as a defense; new section on closest competitors (MemIR, Tenure, Kumiho) with an explicit novelty boundary; agent memory systems, memory poisoning, and taxonomy foundations added.
+- README / README.en / ROUTING-THEORY: system name in prose is GlimpseGate; legacy identifiers intentionally kept.
+
+### Known Issues (v2.3.0)
+
+- `index.d.ts` was not compiled with `tsc` (compiler unavailable in the authoring sandbox).
+- Routes for FM-23…FM-28 and the FM → ISO 25012 mapping are AI-drafted proposals pending owner review.
+- The SDK engine detects only a few of the 28 documented failure modes; the rest are review vocabulary (now stated in ADMISSION-TAXONOMY.md §2).
+- `benchmark:v2` baseline is not re-captured on the new code path.
+
+## 2.2.0 - SPEC-First + Shared Language (2026-05-20)
+> Provenance: `[RECONSTRUCTED]` from commit b52f81b message during 2.3.0; humanReviewed: declined
+
+- Added `SPEC.md` and `CONTEXT.md`; upgraded three `08_skills/mercury-*` skills to reference them; archived legacy iteration guides (copy — see 2.3.0 fix); README public name → GlimpseGate-admission-lab.
+
+## 2.1.7 - Fidelity-Stability Optimizations (2026-05-21)
+> Provenance: `[RECONSTRUCTED]` from commit f120f03 message during 2.3.0; humanReviewed: declined
+
+- `quickStabilityCheck()`; async `auditWithStabilityCheck()` with skip-second-audit fast path; lazily cached routing config; O(n) blocker comparison; `FIDELITY_STABILITY_VERSION` 1.1.0.
+
+## 2.1.6 - Performance Baseline + Config-Driven Routing (2026-05-20)
+> Provenance: `[RECONSTRUCTED]` from commits a3f09ef, 09db563 during 2.3.0; humanReviewed: declined
+
+- Architecture map (`architecture.html` / `.json`); benchmark of all SDK functions with `data/benchmark-baseline.json`; stability threshold and downgrade chain loaded from `config/rule-routing.json` v0.2.
+
 ## 2.1.5 - Quick Intake Feedback (2026-05-13)
 > Provenance: `[AI_GENERATED]` drafted_by: QClaw; humanReviewed: declined; reviewer: project_owner_pending; audit_ref: ITERATION-GUIDE-2.1.5.md
 

@@ -58,6 +58,12 @@ const v2AdmissionContract = packageJson.version === "2.0.2"
   && await exists("src/mercury-audit/admission-contract.mjs")
   && (await readText("README.en.md")).includes("structured admission choices")
   && (await readText("README.md")).includes("Admission Contract");
+// 2.3.0: the version gate used an allowlist of exact releases, so every release
+// after 2.0.2 (2.1.x, 2.2.0) failed CI. A release now counts as a documented
+// unfreeze line when it has its own iteration guide and a CHANGELOG entry.
+const changelogText = await readText("CHANGELOG.md");
+const documentedRelease = await exists(`docs/ITERATION-GUIDE-${packageJson.version}.md`)
+  && new RegExp(`^## ${packageJson.version.replace(/\./g, "\\.")}(?=\\s)`, "m").test(changelogText);
 const proofPack = await readText("docs/PROOF-PACK-001.md");
 const proofPack002 = await readText("docs/PROOF-PACK-002.md");
 const failureModes = await readText("docs/FAILURE-MODES.md");
@@ -67,7 +73,7 @@ const auditRules = await readText("scripts/audit-core/audit_rules.mjs");
 const htmlReport = await readText("scripts/generate_audit_reports.mjs");
 const liteMode = await readText("dashboard/lite.html");
 
-check("version stays on an explicitly documented unfreeze line", packageJson.version.startsWith("1.2.") || productSurfaceUnfreeze || methodDepthUnfreeze || reviewUxUnfreeze || sdkIntegrationUnfreeze || auditKernelUnfreeze || scenarioPackUnfreeze || proofGovernanceUnfreeze || v2PreflightUnfreeze || v2CaseFoundationUnfreeze || v2EvidenceInterfaceUnfreeze || v2PortableEvidenceChain || v2AdmissionReframe || v2AdmissionContract);
+check("version stays on an explicitly documented unfreeze line", packageJson.version.startsWith("1.2.") || productSurfaceUnfreeze || methodDepthUnfreeze || reviewUxUnfreeze || sdkIntegrationUnfreeze || auditKernelUnfreeze || scenarioPackUnfreeze || proofGovernanceUnfreeze || v2PreflightUnfreeze || v2CaseFoundationUnfreeze || v2EvidenceInterfaceUnfreeze || v2PortableEvidenceChain || v2AdmissionReframe || v2AdmissionContract || documentedRelease);
 if (productSurfaceUnfreeze) {
   warnings.push("product surface / Lite intake patch line detected: method-layer Cycle 02 checks still apply, but v1.3.x is allowed for product UI and entry-friction fixes");
 }

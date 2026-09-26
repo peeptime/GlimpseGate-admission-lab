@@ -25,7 +25,7 @@ Z:\AI 202604\trae01\v8-mercury-backend
 1. 先读取 `MEMORY.md` 和 `docs/ITERATION-GUIDE-LATEST.md`。
 2. 只读取用户请求直接涉及的文件。
 3. 需要详细历史时，优先读取 `.skills/mercury-v8-iter/references/audit-reports-index.md`。
-4. 只有当验收标准或历史依据存在争议时，才按章节读取 `docs/ITERATION-GUIDE-0.9.md`、`CHANGELOG.md` 或 `docs/METHODOLOGY-INTEGRITY.md`。
+4. 只有当验收标准或历史依据存在争议时，才按章节读取 `docs/ARCHIVED/ITERATION-GUIDE-0.9.md`、`CHANGELOG.md` 或 `docs/METHODOLOGY-INTEGRITY.md`。
 
 ### 2. 审计报告处理
 

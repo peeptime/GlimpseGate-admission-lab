@@ -68,8 +68,8 @@ No external LLM calls, no network access, no database.
 - [x] Archive legacy ITERATION-GUIDE-0.x, 1.0.x, 1.1.x, 1.2.x docs
 - [x] v2.1.7 tag and release notes
 - [ ] GitHub Releases page updated for v2.1.7 and v2.2.0
-- [ ] Basic CI: lint + test on push
-- [ ] Performance regression baseline (data/benchmark-baseline.json)
+- [x] Basic CI: test on push (already present in `.github/workflows/ci.yml`; confirmed in 2.3.0)
+- [x] Performance regression baseline (data/benchmark-baseline.json exists; not yet enforced in CI)
 
 ### Out of Scope (Not v2.2.0)
 - Backend adapters or database integrations
@@ -193,6 +193,18 @@ docs/                     # Architecture docs, iteration guides
 
 ## 7. Acceptance Criteria
 
+### v2.3.0 Release Gate
+
+- [x] `npm run test` — includes evidence-chain and admission-hardening suites
+- [x] `npm run test:fidelity` and `npm run test:consumer` in CI
+- [x] Admission contract enforces its declared `evidence_condition`
+- [x] Package name is npm-valid (`@glimpsegate/admission-lab`); `files` limits the tarball to the SDK
+- [x] Type declarations for the stable SDK surface
+- [x] Legacy guides exist only under `docs/ARCHIVED/`
+- [x] New terms (evidence condition, pending upgrade, declared source level) in CONTEXT.md
+- [ ] `index.d.ts` compiled against `tsc --strict` (not run in 2.3.0: compiler unavailable in the authoring sandbox)
+- [ ] Owner review of proposed routes FM-23…FM-28 and the FM → ISO 25012 mapping
+
 ### v2.2.0 Release Gate
 
 - [ ] `npm run test` — all tests pass
@@ -248,6 +260,7 @@ These are non-negotiable boundaries. Violations require a major version bump.
 
 | Date | Version | Change |
 |------|---------|--------|
+| 2026-09-26 | 2.3.0 | Restart after freeze: admission-contract evidence enforcement, source-ref classifier fix, reason explainability, SDK packaging + types, taxonomy audit, related-work re-verification |
 | 2026-05-20 | 2.2.0 | Added SPEC.md, CONTEXT.md, skill upgrades, legacy doc archive |
 | 2026-05-20 | 2.1.7 | Fidelity-stability optimizations, quickStabilityCheck, async auditWithStabilityCheck |
 | 2026-05-20 | 2.1.6 | Config-driven routing, performance baseline |

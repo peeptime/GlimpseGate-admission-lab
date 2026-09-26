@@ -9,7 +9,7 @@ This repository is optimized for short, verifiable agent sessions. Do not redisc
 3. Read only the file directly touched by the user request.
 4. Use search before opening long documents.
 
-Read `docs/ITERATION-GUIDE-0.9.md`, `CHANGELOG.md`, `docs/AUDIT-CONTRACT.md`, or `docs/GOVERNANCE.md` only when their detailed wording is needed.
+Read `docs/ARCHIVED/ITERATION-GUIDE-0.9.md`, `CHANGELOG.md`, `docs/AUDIT-CONTRACT.md`, or `docs/GOVERNANCE.md` only when their detailed wording is needed.
 
 ## Context Budget
 

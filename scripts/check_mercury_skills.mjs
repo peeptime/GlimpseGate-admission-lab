@@ -28,7 +28,9 @@ for (const name of skills) {
   check(`${name} declares description`, /^description:\s*\S/m.test(frontmatter?.[1] || ""));
   check(`${name} has no TODO placeholders`, !text.includes("TODO"));
   check(`${name} preserves declined review state`, text.includes("human_reviewed: declined"));
-  check(`${name} does not claim human_reviewed true`, !text.includes("human_reviewed: true"));
+  // Match only lines that actually set the field (YAML), not prose that forbids it
+  // (e.g. "Do not set `human_reviewed: true` on behalf of an AI"). Fixed in 2.3.0.
+  check(`${name} does not claim human_reviewed true`, !/^\s*-?\s*human_reviewed:\s*["']?true\b/m.test(text));
 }
 
 for (const result of checks) {

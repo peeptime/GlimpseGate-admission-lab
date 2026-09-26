@@ -95,6 +95,33 @@ A known pattern where the audit system produces incorrect routing.
 Documented in `docs/FAILURE-MODES.md`. Each failure mode has a proof case
 and a mitigation strategy.
 
+### evidence condition（证据条件）— added 2.3.0
+The evidence an admission must carry before it may grant `can_use_as_fact`:
+`evidence_refs` at traceable level or above (not AI-generated), or a named,
+non-pending human review. For `circular_reasoning`, evidence must be independent
+of the existing chain and review alone does not suffice. Checked in
+`buildAdmissionContract`; result in `evidence_condition_check`.
+
+### pending upgrade（待升级）— added 2.3.0
+The record left in an admission contract when the requested admission was
+downgraded (usually to `hypothesis`) because the evidence condition was not met.
+States what was requested and what is missing. Intent is recorded, not laundered
+into evidence.
+
+### declared source level（声明来源级别）— added 2.3.0
+A source level asserted by the caller with a prefix (`primary::`, `traceable::`,
+`secondary::`, `ai::`) instead of inferred from the reference text. Marked
+`declared: true`.
+
+### Naming: GlimpseGate vs. Mercury — added 2.3.0
+**GlimpseGate** is the project's public name. **Mercury** (Mercury Method Lab →
+Mercury Admission Lab) is the legacy name. Legacy identifiers are kept
+intentionally for compatibility: `src/mercury-audit/`, `08_skills/mercury-*`,
+`MERCURY_*` constants, `mercury-*` provenance tags. Use "GlimpseGate" in new
+prose; do not rename identifiers without a major version.
+**Mercury Agent** (`cosmicstack-labs/mercury-agent`) is a separate, unrelated
+runtime — see `docs/MERCURY-AGENT-RELATIONSHIP.md`.
+
 ---
 
 ## Routing Signal Types

@@ -4,7 +4,7 @@
 
 Formerly: `Mercury Method Lab` · `Mercury Admission Lab`
 Repository: `peeptime/GlimpseGate-admission-lab`
-Version: `2.2.0`
+Version: `2.3.0`
 Latest release: [v2.2.0 SPEC-First + Shared Language](https://github.com/peeptime/GlimpseGate-admission-lab/releases/tag/v2.2.0)
 
 **Core Docs:** [SPEC.md](SPEC.md) · [CONTEXT.md](CONTEXT.md)
@@ -27,7 +27,7 @@ provenance:
 
 ## One Sentence
 
-Mercury Admission Lab is a **choice-gated knowledge admission protocol** for LLM outputs, agent memory, and knowledge-transfer artifacts.
+GlimpseGate Admission Lab is a **choice-gated knowledge admission protocol** for LLM outputs, agent memory, and knowledge-transfer artifacts.
 
 It does not ask how credible content appears. It asks whether that content deserves to be retained, reused, written into durable memory, or delivered to another person.
 
@@ -36,24 +36,24 @@ Scoring = how credible this content appears.
 Admission = whether this content deserves to be remembered.
 ```
 
-Mercury focuses on admission.
+GlimpseGate focuses on admission.
 
 ---
 
-## What Mercury Produces
+## What GlimpseGate Produces
 
-Mercury does not produce truth verdicts. Mercury produces structured admission choices.
+GlimpseGate does not produce truth verdicts. GlimpseGate produces structured admission choices.
 
 In 2.0.2, a user choice can be closed into an **Admission Contract** that separates:
 
 - `source_material`: the original refs that should remain inspectable.
-- `model_framing`: Mercury's claim extraction, evidence ordering, and confidence basis.
+- `model_framing`: GlimpseGate's claim extraction, evidence ordering, and confidence basis.
 - `user_judgment`: the selected choice and review state.
 - `admitted_object`: the memory object that may enter a knowledge base.
 
 The admitted object has an explicit type such as `fact`, `hypothesis`, `attribution`, `interpretation`, `open_question`, `preference`, `decision_record`, `temporary_note`, or `reference`.
 
-This prevents a quiet slide from "the material mentioned X" to "Mercury framed X confidently" to "the knowledge base treats X as fact."
+This prevents a quiet slide from "the material mentioned X" to "GlimpseGate framed X confidently" to "the knowledge base treats X as fact."
 
 ---
 
@@ -97,7 +97,7 @@ Main entry points:
 
 ## Known Boundaries
 
-Mercury Admission Lab does not claim:
+GlimpseGate Admission Lab does not claim:
 
 - External team adoption.
 - Production validation.
@@ -186,7 +186,7 @@ npm run skills:check
 
 ## Related Work
 
-Mercury Admission Lab treats these as reference coordinates, not original inventions:
+GlimpseGate Admission Lab treats these as reference coordinates, not original inventions:
 
 - A-MAC: decomposed memory admission control.
 - MemSAD: anomaly detection and attack modeling for memory systems.
@@ -244,4 +244,4 @@ Do not treat captured material as approved memory.
 Do not define success metrics that invite agent gaming.
 ```
 
-Mercury's value is not producing more content. It is making unsafe content harder to retain.
+GlimpseGate's value is not producing more content. It is making unsafe content harder to retain.
