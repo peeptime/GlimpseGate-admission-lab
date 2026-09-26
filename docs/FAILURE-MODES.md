@@ -27,11 +27,13 @@ This taxonomy is a working classification, not a claim of completeness. It is me
 
 | Family | Question It Answers | Failure Modes |
 |---|---|---|
-| Evidence Lineage Failures | Can the claim be traced to inspectable source and audit evidence? | FM-01, FM-02, FM-03, FM-12, FM-18 |
-| Memory Boundary Failures | Is the claim scoped tightly enough for durable reuse? | FM-04, FM-05, FM-08, FM-09, FM-10, FM-22 |
+| Evidence Lineage Failures | Can the claim be traced to inspectable source and audit evidence? | FM-01, FM-02, FM-03, FM-12, FM-18, FM-23 |
+| Memory Boundary Failures | Is the claim scoped tightly enough for durable reuse? | FM-04, FM-05, FM-08, FM-09, FM-10, FM-22, FM-24 |
 | Delivery and Stakeholder Failures | Does the claim preserve real-world ambiguity before action? | FM-06, FM-07 |
-| Validation Leap Failures | Does the claim confuse plausibility, demos, or strategy with validation? | FM-11, FM-13, FM-19, FM-20, FM-21 |
-| Governance and Measurement Failures | Does the audit system preserve review honesty and avoid gameable targets? | FM-14, FM-15, FM-16, FM-17 |
+| Validation Leap Failures | Does the claim confuse plausibility, demos, or strategy with validation? | FM-11, FM-13, FM-19, FM-20, FM-21, FM-25, FM-26 |
+| Governance and Measurement Failures | Does the audit system preserve review honesty and avoid gameable targets? | FM-14, FM-15, FM-16, FM-17, FM-27, FM-28 |
+
+> 2.3.0: FM-23…FM-28 added to families (previously unassigned). These families mix claim-level and process-level defects; `docs/ADMISSION-TAXONOMY.md` §2–3 proposes a two-level split and records which FMs the SDK engine actually detects (most are review vocabulary, not automated checks).
 
 ### Boundary Rules
 
