@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" fill="none">
+  <!-- GlimpseGate mark: a square whose lower-right quadrant keeps subdividing.
+       The glimpse: one corner of the whole, looked at more closely. -->
+  <rect x="2" y="2" width="28" height="28" stroke="#e9ebee" stroke-width="1.6"/>
+  <path d="M16 2v28M2 16h28" stroke="#e9ebee" stroke-width="1.2" opacity=".55"/>
+  <path d="M23 16v14M16 23h14" stroke="#e9ebee" stroke-width="1" opacity=".55"/>
+  <path d="M26.5 23v7M23 26.5h7" stroke="#e9ebee" stroke-width=".8" opacity=".55"/>
+  <rect x="26.5" y="26.5" width="3.5" height="3.5" fill="#a99bff"/>
+</svg>

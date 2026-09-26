@@ -1,294 +1,51 @@
 <!doctype html>
-<html lang="zh-CN">
+<html lang="zh-CN" data-motion="full">
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Mercury Method Lab</title>
-    <link rel="icon" href="data:,">
-    <link rel="stylesheet" href="/styles.css?v=20260513a">
+    <meta name="color-scheme" content="dark">
+    <title>GlimpseGate</title>
+    <link rel="icon" href="/app/mark.svg" type="image/svg+xml">
+    <link rel="stylesheet" href="/app/styles.css">
+    <script type="module" src="/app/main.js"></script>
   </head>
   <body>
-    <main class="shell">
-      <aside class="rail">
-        <div class="brand">
-          <span class="brand-mark">M</span>
-          <div>
-            <strong>Method Lab</strong>
-            <span data-i18n="brandSubtitle">Agent-first intake</span>
-          </div>
-        </div>
-        <div class="rail-section">
-          <p data-i18n="railPrimary">Primary path</p>
-          <a href="#submit" data-i18n="railSubmit">Submit viewpoint</a>
-          <a href="#intake" data-i18n="railIntake">Intake queue</a>
-          <a href="#artifacts" data-i18n="railArtifacts">Internal artifacts</a>
-        </div>
-        <details class="system-capabilities" open>
-          <summary data-i18n="systemSurfaces">System surfaces</summary>
-          <nav id="capabilities" class="capabilities"></nav>
-        </details>
-      </aside>
+    <canvas id="field" class="field" aria-hidden="true"></canvas>
 
-      <section class="workspace">
-        <header class="topbar">
-          <div>
-            <p class="eyebrow" data-i18n="eyebrow">Agent-first submission layer</p>
-            <h1 data-i18n="pageTitle">Submit a viewpoint, then let the pipeline carry it.</h1>
-          </div>
-          <div class="toolbar">
-            <span id="buildBadge" class="build-badge" aria-label="GUI build">v2026.05.13</span>
-            <div class="topbar-language">
-              <span class="language-label" data-i18n="languageLabel">Language</span>
-              <div class="language-mode" aria-label="Language mode">
-                <button type="button" data-locale="zh">&#20013;&#25991;</button>
-                <button type="button" data-locale="en">EN</button>
-              </div>
-            </div>
-            <select id="providerSelect" aria-label="Provider"></select>
-            <button id="refreshButton" type="button" data-i18n="refresh">Refresh</button>
-          </div>
+    <div class="shell">
+      <nav class="rail" aria-label="Primary">
+        <a class="mark" href="#/gate" aria-label="GlimpseGate">
+          <img src="/app/mark.svg" alt="" width="22" height="22">
+        </a>
+        <div class="rail-nav">
+          <a href="#/gate" data-view="gate"><span class="rail-glyph" data-glyph="gate"></span><span data-t="nav.gate">Gate</span></a>
+          <a href="#/library" data-view="library"><span class="rail-glyph" data-glyph="library"></span><span data-t="nav.library">Library</span></a>
+          <a href="#/system" data-view="system"><span class="rail-glyph" data-glyph="system"></span><span data-t="nav.system">System</span></a>
+        </div>
+        <div class="rail-foot">
+          <button type="button" class="lang" id="langToggle" aria-label="Language">中</button>
+          <span class="health" id="health" title="server"></span>
+        </div>
+      </nav>
+
+      <main class="stage" id="stage" tabindex="-1">
+        <header class="strip">
+          <span class="strip-brand">GLIMPSEGATE</span>
+          <span class="strip-sep">/</span>
+          <span class="strip-view" id="stripView">gate</span>
+          <span class="strip-fill"></span>
+          <span class="strip-meta" id="stripMeta">—</span>
+          <button type="button" class="kbd-hint" id="paletteHint"><kbd>⌘</kbd><kbd>K</kbd></button>
         </header>
+        <div id="view" class="view"></div>
+      </main>
+    </div>
 
-        <div id="appStatus" class="app-status info" role="status">正在初始化...</div>
-        <div id="versionHint" class="version-hint" role="status">版本检查中...</div>
-
-        <section class="mode-card" aria-labelledby="executionModeTitle">
-          <div class="mode-block">
-            <h2 id="executionModeTitle" data-i18n="executionModeTitle">Execution mode</h2>
-            <p id="executionModeDesc">-</p>
-            <div class="segmented mode-toggle" id="executionModeButtons" aria-label="Execution mode"></div>
-          </div>
-          <div class="mode-block">
-            <h2 id="analysisPersonaTitle" data-i18n="analysisPersonaTitle">Analysis persona</h2>
-            <p id="analysisPersonaDesc">-</p>
-            <div class="segmented mode-toggle persona-toggle" id="analysisPersonaButtons" aria-label="Analysis persona"></div>
-          </div>
-        </section>
-
-        <section class="readiness-panel" aria-labelledby="deploymentTitle">
-          <div class="panel-head">
-            <div>
-              <h2 id="deploymentTitle" data-i18n="deploymentTitle">Deployment readiness</h2>
-              <p data-i18n="deploymentDesc">Check the few things a new user must wire before running analysis.</p>
-            </div>
-            <span id="deploymentBadge" class="readiness-badge">-</span>
-          </div>
-          <div id="deploymentReadiness" class="readiness-grid"></div>
-        </section>
-
-        <section id="submit" class="hero-flow">
-          <article class="submit-card">
-            <div class="panel-head">
-              <div>
-                <h2 data-i18n="submitTitle">Drop material into storage</h2>
-                <p data-i18n="submitDesc">Paste text or attach files. The system names, stores, routes, and returns a clean intake statement.</p>
-              </div>
-            </div>
-            <form id="intakeForm" class="viewpoint-form">
-              <label class="span-2">
-                <span data-i18n="materialLabel">Material text</span>
-                <textarea name="text" rows="5" data-i18n-placeholder="materialPlaceholder" placeholder="直接粘贴整段观点、问题、会议记录、草稿、网页摘录。可以不写标题。"></textarea>
-              </label>
-              <label class="span-2 file-drop">
-                <span data-i18n="fileLabel">Attach files</span>
-                <input id="intakeFiles" name="files" type="file" multiple>
-                <small data-i18n="fileHint">Images, markdown, txt, pdf, docx, or other documents are stored first. Parsing can happen later.</small>
-              </label>
-              <div class="submit-actions span-2">
-                <button class="primary-action" type="submit" data-i18n="submitButton">Store and run intake</button>
-                <span data-i18n="submitNote">You provide material. The system handles naming, storage, routing, and first response.</span>
-              </div>
-            </form>
-
-            <!-- v2.1.5: Intake Feedback Panel -->
-            <div id="intakeFeedback" class="feedback-panel" role="region" aria-label="Content quality feedback">
-              <h3>快速质量评估</h3>
-              <div class="feedback-score-row">
-                <div class="feedback-score-ring">
-                  <svg viewBox="0 0 64 64">
-                    <circle class="bg" cx="32" cy="32" r="27" />
-                    <circle id="feedbackRingFg" class="fg" cx="32" cy="32" r="27"
-                      stroke-dasharray="169.65" stroke-dashoffset="169.65" />
-                  </svg>
-                  <div class="feedback-score-value">
-                    <span id="feedbackScoreValue">—</span>
-                    <span>/10</span>
-                  </div>
-                </div>
-                <div class="feedback-score-meta">
-                  <span id="feedbackQualityBadge" class="quality-badge">—</span>
-                  <p id="feedbackWordCount">— 字 · — claims</p>
-                  <p id="feedbackRoutingHint">路由建议：—</p>
-                </div>
-              </div>
-
-              <div class="feedback-dimensions">
-                <div class="feedback-dim">
-                  <strong id="dimStructure">—</strong>
-                  <span>结构</span>
-                </div>
-                <div class="feedback-dim">
-                  <strong id="dimEvidence">—</strong>
-                  <span>证据</span>
-                </div>
-                <div class="feedback-dim">
-                  <strong id="dimConclusion">—</strong>
-                  <span>结论</span>
-                </div>
-                <div class="feedback-dim">
-                  <strong id="dimSpecificity">—</strong>
-                  <span>具体性</span>
-                </div>
-              </div>
-
-              <div id="feedbackFlags" class="feedback-flags"></div>
-              <div id="feedbackClaims" class="feedback-claims"></div>
-              <div id="feedbackLoading" class="feedback-loading" style="display:none">分析中...</div>
-              <div class="feedback-actions">
-                <button class="secondary" id="feedbackRefreshBtn" type="button">重新分析</button>
-              </div>
-            </div>
-
-            <a href="#artifacts" class="quick-link" data-i18n="quickArtifacts">查看历史 artifacts &rarr;</a>
-            <div id="intakeResult" class="intake-result empty">Submit material to see the system's clean intake statement here.</div>
-          </article>
-
-          <aside class="flow-card">
-            <h2 data-i18n="flowTitle">What happens next</h2>
-            <ol>
-              <li><strong data-i18n="flowStep1Title">Store</strong><span data-i18n="flowStep1Desc">Keep the user's raw material under submissions/inbox.</span></li>
-              <li><strong data-i18n="flowStep2Title">Respond</strong><span data-i18n="flowStep2Desc">Return a clean statement, route, and questions immediately.</span></li>
-              <li><strong data-i18n="flowStep3Title">Queue</strong><span data-i18n="flowStep3Desc">Create an envelope for OpenClaw or Hermes-like agents.</span></li>
-              <li><strong data-i18n="flowStep4Title">Process</strong><span data-i18n="flowStep4Desc">Raw artifact enters cleaning, judgment, audit, or action translation.</span></li>
-            </ol>
-          </aside>
-        </section>
-
-        <section id="intake" class="intake-panel">
-          <div class="panel-head">
-            <div>
-              <h2 data-i18n="intakeTitle">Intake queue</h2>
-              <p data-i18n="intakeDesc">Recent submissions waiting for promotion into raw evidence.</p>
-            </div>
-            <span id="queueCount" class="queue-count">0 agent tasks</span>
-          </div>
-          <div id="submissionRows" class="submission-list"></div>
-        </section>
-
-        <section class="metrics" id="metrics"></section>
-
-        <section id="artifacts" class="workbench">
-          <article class="panel artifact-panel">
-            <div class="panel-head">
-              <div>
-                <h2 data-i18n="artifactTableTitle">Artifact workbench</h2>
-                <p data-i18n="artifactTableDesc">Select a file to inspect, edit, and move through lifecycle states.</p>
-              </div>
-            </div>
-            <div class="artifact-tools">
-              <input id="artifactSearch" type="search" placeholder="Search artifacts">
-              <div class="segmented" id="artifactFilters"></div>
-            </div>
-            <div class="table-wrap artifact-table-wrap">
-              <table>
-                <thead>
-                  <tr>
-                    <th data-i18n="artifactFile">File</th>
-                    <th data-i18n="artifactType">Type</th>
-                    <th data-i18n="artifactStatus">Status</th>
-                    <th data-i18n="artifactOwner">Owner</th>
-                    <th data-i18n="artifactReview">Review</th>
-                  </tr>
-                </thead>
-                <tbody id="artifactRows"></tbody>
-              </table>
-            </div>
-          </article>
-
-          <aside class="panel detail-panel">
-            <div class="panel-head">
-              <div>
-                <h2 data-i18n="detailTitle">Artifact detail</h2>
-                <p id="detailPath">-</p>
-              </div>
-            </div>
-            <div id="artifactDetail" class="detail-body"></div>
-          </aside>
-        </section>
-
-        <section class="lower-grid">
-          <article class="panel create-panel">
-            <div class="panel-head">
-              <div>
-                <h2 data-i18n="createTitle">Create artifact</h2>
-                <p data-i18n="createDesc">Start a tracked decision, action plan, audit report, memory candidate, or raw note.</p>
-              </div>
-            </div>
-            <form id="createForm" class="form-grid">
-              <label>
-                <span data-i18n="fieldTitle">Title</span>
-                <input name="title" type="text" required>
-              </label>
-              <label>
-                <span data-i18n="fieldType">Type</span>
-                <select name="type">
-                  <option value="decision_log">decision_log</option>
-                  <option value="action_plan">action_plan</option>
-                  <option value="audit_report">audit_report</option>
-                  <option value="memory_candidate">memory_candidate</option>
-                  <option value="raw">raw</option>
-                </select>
-              </label>
-              <label>
-                <span data-i18n="fieldOwner">Owner role</span>
-                <select name="owner_role" id="createOwner"></select>
-              </label>
-              <label>
-                <span data-i18n="fieldReviewAt">Review date</span>
-                <input name="review_at" type="date">
-              </label>
-              <label class="span-2">
-                <span data-i18n="fieldSourceRef">Source ref</span>
-                <input name="source_ref" type="text">
-              </label>
-              <label class="span-2">
-                <span data-i18n="fieldNote">Note</span>
-                <textarea name="note" rows="2"></textarea>
-              </label>
-              <button type="submit" data-i18n="createButton">Create tracked artifact</button>
-            </form>
-          </article>
-
-          <article class="panel">
-            <div class="panel-head">
-              <div>
-                <h2 data-i18n="executionTitle">Execution</h2>
-                <p data-i18n="executionDesc">Run allowlisted project maintenance commands.</p>
-              </div>
-            </div>
-            <div class="commands">
-              <button data-run="doctor" type="button">Doctor</button>
-              <button data-run="index" type="button">Index</button>
-              <button data-run="validate" type="button">Validate</button>
-              <button data-run="sync:skills" type="button">Sync Skills</button>
-              <button data-run="test:llm" type="button">Test LLM</button>
-            </div>
-            <pre id="commandOutput" class="output" data-i18n="waitingExecution">Waiting for execution...</pre>
-          </article>
-
-          <article class="panel lifecycle-panel">
-            <div class="panel-head">
-              <div>
-                <h2 data-i18n="logTitle">Lifecycle log</h2>
-                <p data-i18n="logDesc">Every GUI change is appended to data/lifecycle-log.jsonl.</p>
-              </div>
-            </div>
-            <div id="lifecycleLog" class="timeline"></div>
-          </article>
-        </section>
-      </section>
-    </main>
-    <script src="/product-layer.js?v=20260510a" type="module"></script>
-    <script src="/app.js?v=20260510a" type="module"></script>
+    <div id="toasts" class="toasts" role="status" aria-live="polite"></div>
+    <dialog id="palette" class="palette" aria-label="Command palette">
+      <input id="paletteInput" type="text" autocomplete="off" spellcheck="false">
+      <ul id="paletteList"></ul>
+    </dialog>
+    <noscript><p class="noscript">GlimpseGate needs JavaScript. The single-file offline checker is at <a href="/lite.html">/lite.html</a>.</p></noscript>
   </body>
 </html>
