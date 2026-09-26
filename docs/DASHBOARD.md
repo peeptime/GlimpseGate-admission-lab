@@ -68,6 +68,8 @@ No build step and no runtime dependencies, consistent with the SDK.
 | `POST /api/v1/admission/contract` | same input + `selection` → admission contract. The server recomputes the chain instead of trusting one echoed by the client. |
 | `POST /api/lite-audit` | legacy shape (superset), now SDK-backed |
 
+Since 2.5.0 the audit and contract routes accept `lang`: `zh-CN` / `en` / `agent`. Localization is additive: see `scripts/dashboard/feedback-lang.mjs`.
+
 `source:` / `review:` / `来源：` / `复核：` lines in pasted text become
 `source_refs` / `audit_refs`. Only explicit lines count; mentioning the word
 "source" does not (the old regex accepted that).

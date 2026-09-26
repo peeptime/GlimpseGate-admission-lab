@@ -108,7 +108,17 @@ const dict = {
     "sys.upToDate": "已是最新",
     "sys.newer": "有新版本",
     "palette.ph": "跳转或执行命令…",
-    "cmd.run": "运行"
+    "cmd.run": "运行",
+    "lt.translated": "译",
+    "lt.showOriginal": "看原文",
+    "lt.showTranslated": "看译文",
+    "lt.note": "反馈已译成中文 {n} 条，未译 {f} 条。译文是转述，不是来源。",
+    "hr.A.label": "补证据后入库",
+    "hr.A.action": "补上证据引用或具名复核。",
+    "hr.B.label": "按有限知识入库",
+    "hr.B.action": "能参与推理，永远不当事实。",
+    "hr.C.label": "先挂起",
+    "hr.C.action": "记为待解问题。"
   },
   en: {
     "nav.gate": "Gate", "nav.library": "Library", "nav.system": "System",
@@ -152,7 +162,12 @@ const dict = {
     "sys.update": "Check for updates", "sys.clean": "Clean dist", "sys.cleanConfirm": "Delete all generated files under dist/?",
     "sys.interface": "Interface", "sys.motion": "Motion", "motion.full": "full", "motion.calm": "calm", "motion.off": "off",
     "sys.classic": "Classic GUI (all settings)", "sys.upToDate": "Up to date", "sys.newer": "Newer version",
-    "right.locked": "locked", "palette.ph": "Jump or run a command…", "cmd.run": "run"
+    "right.locked": "locked", "palette.ph": "Jump or run a command…", "cmd.run": "run",
+    "lt.translated": "tr", "lt.showOriginal": "Original", "lt.showTranslated": "Translation",
+    "lt.note": "{n} translated, {f} untranslated. A translation is framing, not source.",
+    "hr.A.label": "Admit with stronger evidence", "hr.A.action": "Supply evidence refs or a named review.",
+    "hr.B.label": "Admit as limited knowledge", "hr.B.action": "Usable in reasoning, never as fact.",
+    "hr.C.label": "Keep unresolved", "hr.C.action": "Record as an open question."
   }
 };
 

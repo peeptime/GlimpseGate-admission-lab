@@ -4,7 +4,7 @@
 
 Formerly: `Mercury Method Lab` · `Mercury Admission Lab`
 Repository: `peeptime/GlimpseGate-admission-lab`
-Version: `2.4.1`
+Version: `2.5.0`
 Latest release: [v2.2.0 SPEC-First + Shared Language](https://github.com/peeptime/GlimpseGate-admission-lab/releases/tag/v2.2.0)
 
 **Core Docs:** [SPEC.md](SPEC.md) · [CONTEXT.md](CONTEXT.md)
@@ -13,7 +13,7 @@ Latest release: [v2.2.0 SPEC-First + Shared Language](https://github.com/peeptim
 
 ```yaml
 provenance:
-  authors: project_owner + Codex
+  authors: project_owner + Codex (≤2.2.0) + Claude (2.3.0–2.5.0)
   ai_assisted: true
   human_reviewed: declined
   reviewer: project_owner_pending
@@ -107,32 +107,31 @@ GlimpseGate Admission Lab does not claim:
 - A solved multi-agent shared-memory contamination model.
 - Adversarial prompt-injection hardening.
 - Replacement for fact checking, RAG, AI scoring, or security certification.
+- **That human choice beats automatic typing.** This is the project's core claim and it is untested. Blueprint 2.6.0 exists to test it (`docs/BLUEPRINT-2.6.0.md`).
+- Priority on "typed memory with evidence-restricted fact status": MemIR (2026) already does that. The remaining difference is in `docs/RELATED-WORK.md`.
 
 These are release priorities, not footnotes.
 
 ---
 
-## 2.1.0 Changes
+## Recent Releases (2.3 – 2.5)
 
-This release adds the **F5 Stability Engine** and formalizes type-aware admission constraints:
+| Version | Focus |
+|---|---|
+| **2.5.0** Feedback Language | Feedback tagged per audience: `zh-CN` Chinese users (mechanic words), `en` developers (canonical SDK text), `agent` (canonical text + stable codes). A translation is framing, not source: the original is one click away and untranslated text is marked EN. 100% of SDK feedback covered, enforced by a test. |
+| **2.4.1** Mechanic Words | zh UI copy uses mechanic words (save file, storage, level, unlock), no memes, fewer adverbials. Options preview the permissions they grant before you choose. Rules: `docs/COPY-STYLE.md`. |
+| **2.4.0** Gate GUI v3 | New GUI. Fixed: the GUI bypassed the SDK with its own regex auditor; any web page could drive the local server cross-site (now guarded). Node-network, fractal route glyphs, and noise-field motion design. Old GUI at `/classic/`. |
+| **2.3.0** Admission Hardening | Closed the admission-contract laundering path: choosing "find evidence" used to admit a fact immediately. Now fact status stays locked until evidence arrives. CI on main, red since 2.2.0, is green again. Taxonomy audit and re-verified related work. |
 
-- **F5 Fidelity Engine** (`verifyAuditStability` + `applyStabilityGate`): detects routing inconsistency, low-fidelity+accept combos, and confidence-routing mismatches. Unstable results auto-downgrade: `accept → revise → quarantine`. `discard` is terminal and never downgraded.
-- **Type-aware routing**: each of the 9 admission object types has its own evidence requirements and usage constraints, documented in `docs/TYPE-MECE-ANALYSIS.md`.
-- **Procedural knowledge handling**: `reference`-type objects can carry `provenance_type: procedural_knowledge` with scoped usage rules.
-- **SDK API**: `verifyAuditStability` and `applyStabilityGate` are now exported from the main entry.
-- **Tests**: 21 new integration tests for F1-F5 × routing, all passing.
+Full record: `CHANGELOG.md`.
 
-## 2.0.2 Roadmap (superseded)
+## Next: Observation Mode
 
-The next focus is proving whether the admission gate works:
+After 2.5.0, feature work pauses. What comes next is set by changes in the outside world and by the project's own evidence, not by a calendar:
 
-1. **Admission Contract Review**: test whether users understand what object they admitted and what it may be used for.
-2. **Ground-Truth Track**: build 30-100 labeled examples covering known wrong answers, credible answers, and failure modes, then measure precision / recall.
-3. **Cross-Model Audit**: separate generation and audit models, and record disagreement instead of relying on same-source self-approval.
-4. **Programmable Checks**: use code or APIs for URLs, numbers, executable facts, and format checks whenever possible.
-5. **Adversarial Injection Tests**: test route-forcing, opposing evidence, and audit-prompt manipulation.
-6. **Multi-Agent Contamination Track**: promote shared-memory contamination from a coverage gap to a mainline risk.
-7. **Human Trust Anchor**: get at least one key document or audit path reviewed by a named human.
+- **Default**: the 2.6.0 Disagreement Ledger at the owner's pace (`docs/BLUEPRINT-2.6.0.md`). It tests whether human choice catches anything automatic typing does not.
+- **Conditional**: the three parts of 2.7.0 (revision state / stable agent codes / MCP tool manifest) each have a trigger and a cancel condition (`docs/BLUEPRINT-2.7.0.md`).
+- **Watch list** and expectation management: `docs/OBSERVATION-MODE.md`. Bug and security fixes are unaffected.
 
 ---
 
@@ -140,6 +139,7 @@ The next focus is proving whether the admission gate works:
 
 ```powershell
 npm install
+npm test
 npm run demo:starter
 npm run demo:openclaw
 npm run cases:check
@@ -157,8 +157,12 @@ npm run dashboard
 Then visit:
 
 ```text
-http://127.0.0.1:4788/lite.html
+http://127.0.0.1:4788/            new GUI (Gate / Library / System)
+http://127.0.0.1:4788/lite.html   offline single file
+http://127.0.0.1:4788/classic/    old GUI (kept one release)
 ```
+
+SDK integration: `docs/SDK-QUICKSTART.md` (`npm install github:peeptime/GlimpseGate-admission-lab`; not published to npm).
 
 ---
 
@@ -201,7 +205,13 @@ GlimpseGate Admission Lab treats these as reference coordinates, not original in
 |---|---|
 | Start by role | `docs/START-HERE.md` |
 | Scope boundary | `docs/SCOPE.md` |
-| 2.0.2 handoff | `docs/ITERATION-GUIDE-2.0.2.md` |
+| Current iteration | `docs/ITERATION-GUIDE-LATEST.md` |
+| SDK integration | `docs/SDK-QUICKSTART.md` |
+| Local GUI | `docs/DASHBOARD.md` |
+| UI copy rules | `docs/COPY-STYLE.md` |
+| Taxonomy audit | `docs/ADMISSION-TAXONOMY.md` |
+| Next two versions | `docs/BLUEPRINT-2.6.0.md` · `docs/BLUEPRINT-2.7.0.md` |
+| Observation mode | `docs/OBSERVATION-MODE.md` |
 | SDK API | `docs/SDK-API.md` |
 | Audit kernel | `docs/AUDIT-KERNEL.md` |
 | Scenario packs | `docs/SCENARIO-PACKS.md` |
@@ -220,6 +230,12 @@ Before release:
 
 ```powershell
 npm run release:gate
+```
+
+Full cross-platform test (what CI runs):
+
+```powershell
+npm test
 ```
 
 Faster edit checks:

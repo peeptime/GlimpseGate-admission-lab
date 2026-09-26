@@ -80,6 +80,22 @@ try {
   const proven = await call("POST", "/api/v1/admission/contract", { body: { ...base, selection: { gap_id: "circular_reasoning", choice_id: "A", evidence_refs: ["primary::interview:2026-09-20"] } } });
   assert.equal(proven.json.contract.admitted_object.object_type, "fact");
 
+  // Feedback language tagging (2.5.0): additive, per ecosystem.
+  const zhRes = await call("POST", "/api/v1/admission/audit", { body: { ...base, lang: "zh-CN" } });
+  assert.equal(zhRes.json.feedback_lang.requested, "zh-CN");
+  assert.equal(zhRes.json.feedback_lang.fallback, 0, "all SDK feedback in this case has a zh entry");
+  assert.ok(zhRes.json.feedback_lang.translated > 0);
+  assert.equal(zhRes.json.required_fixes[0], circ.json.required_fixes[0], "canonical field unchanged");
+  assert.equal(zhRes.json.required_fixes_l10n[0].original, zhRes.json.required_fixes[0]);
+  assert.match(zhRes.json.required_fixes_l10n[0].text, /[\u4e00-\u9fff]/);
+  const agentRes = await call("POST", "/api/v1/admission/audit", { body: { ...base, lang: "agent" } });
+  assert.equal(agentRes.json.feedback_lang.register, "canonical");
+  assert.equal(agentRes.json.required_fixes_l10n[0].text, agentRes.json.required_fixes[0]);
+  assert.ok(agentRes.json.required_fixes_l10n.every((f) => f.code), "agents key on codes");
+  const zhContract = await call("POST", "/api/v1/admission/contract", { body: { ...base, lang: "zh-CN", selection: { gap_id: "circular_reasoning", choice_id: "A" } } });
+  assert.equal(zhContract.json.l10n.selected_label.text, "找独立证据");
+  assert.ok(zhContract.json.l10n.pending_requires.every((r) => r.translated));
+
   // Legacy lite shape preserved (superset), now SDK-backed.
   const lite = await call("POST", "/api/lite-audit", { body: { text: "The user always wants every AI output remembered permanently." } });
   for (const k of ["routing_decision", "failure_modes", "evidence_gap", "memory_pollution_risk", "required_fixes", "provenance"]) assert.ok(k in lite.json.result, `lite missing ${k}`);

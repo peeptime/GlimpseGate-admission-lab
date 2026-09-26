@@ -13,6 +13,7 @@ import {
   ADMISSION_CONTRACT_VERSION
 } from "../../src/mercury-audit/index.mjs";
 import { HttpError } from "./http.mjs";
+import { localizeView, tagText, normalizeFeedbackLang, FEEDBACK_LANGS } from "./feedback-lang.mjs";
 
 const MAX_TEXT = 20000;
 const REF_LINE = /^\s*(?:[-*]\s*)?(source_refs?|sources?|来源|证据|引用|audit_refs?|audit|review(?:ed)?(?:\s+by)?|审计|复核)\s*[:：]\s*(.+)$/i;
@@ -116,10 +117,13 @@ export function registerAdmissionRoutes(router) {
     api_version: MERCURY_AUDIT_API_VERSION,
     contract_version: ADMISSION_CONTRACT_VERSION,
     object_types: MEMORY_OBJECT_TYPES,
+    feedback_langs: FEEDBACK_LANGS,
     routes: ["accept", "revise", "quarantine", "discard"]
   }));
 
-  router.add("POST", "/api/v1/admission/audit", ({ body }) => ({ ok: true, ...view(runGate(body)) }), { body: true });
+  // `lang`: "zh-CN" | "en" | "agent" (default en). Canonical fields never change;
+  // localized siblings and a feedback_lang summary are added (feedback-lang.mjs).
+  router.add("POST", "/api/v1/admission/audit", ({ body }) => ({ ok: true, ...localizeView(view(runGate(body)), body.lang) }), { body: true });
 
   // Stateless and tamper-resistant: the server recomputes the chain from the
   // same input instead of trusting a chain echoed back by the client.
@@ -135,7 +139,13 @@ export function registerAdmissionRoutes(router) {
       human_reviewed: s.human_reviewed,
       note: s.note
     });
-    return { ok: true, decision: gate.result.routing_decision, contract };
+    const lang = normalizeFeedbackLang(body.lang);
+    const l10n = {
+      feedback_lang: { ...FEEDBACK_LANGS[lang], requested: lang },
+      selected_label: tagText(contract.selected_choice.label, lang),
+      pending_requires: (contract.pending_upgrade?.requires || []).map((r) => tagText(r, lang))
+    };
+    return { ok: true, decision: gate.result.routing_decision, contract, l10n };
   }, { body: true });
 
   // Legacy shape for lite.html and existing bookmarklets, now SDK-backed.
