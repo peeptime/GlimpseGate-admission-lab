@@ -5,7 +5,7 @@
 Formerly: `Mercury Method Lab` · `Mercury Admission Lab`
 Repository: `peeptime/GlimpseGate-admission-lab`
 Version: `2.5.0`
-Latest release: [v2.2.0 SPEC-First + Shared Language](https://github.com/peeptime/GlimpseGate-admission-lab/releases/tag/v2.2.0)
+Latest version: `2.5.0` Feedback Language · 版本记录：[RELEASES.md](RELEASES.md)（GitHub Releases 页面停在 v2.2.0）
 
 **架构映射**：[HTML（人工阅读）](architecture.html) · [JSON（智能体使用）](architecture.json)
 **核心文档**：[SPEC.md](SPEC.md) · [CONTEXT.md](CONTEXT.md)
