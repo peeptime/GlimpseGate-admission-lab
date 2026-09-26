@@ -2,9 +2,11 @@ import { createServer } from "node:http";
 import { request as httpsRequest } from "node:https";
 import { execFile, spawnSync } from "node:child_process";
 import { appendFile, mkdir, readdir, readFile, rm, stat, writeFile } from "node:fs/promises";
-import { createReadStream } from "node:fs";
 import { basename, dirname, extname, join, normalize, relative } from "node:path";
 import { fileURLToPath } from "node:url";
+import { HttpError, guardRequest, sendJson, serveStatic } from "./dashboard/http.mjs";
+import { createRouter, withStatus } from "./dashboard/router.mjs";
+import { registerAdmissionRoutes } from "./dashboard/admission-api.mjs";
 
 // goal-validator API
 const { validate: goalValidate, createActionPlan: goalCreateActionPlan } = await import("./goal-validator.mjs").catch(() => ({ validate: null, createActionPlan: null }));
@@ -86,188 +88,186 @@ const createTypeConfig = {
   }
 };
 
-const server = createServer(async (req, res) => {
-  try {
-    const url = new URL(req.url, `http://${req.headers.host}`);
+// ── Routes ───────────────────────────────────────────────────────────────
+// v3 (2.4.0): one route table instead of a 27-branch if-chain. Admission
+// routes (including the legacy /api/lite-audit) live in dashboard/admission-api.mjs
+// and are backed by the SDK.
+function buildRouter() {
+  const router = createRouter();
+  registerAdmissionRoutes(router);
+  router.add("GET", "/api/health", async () => {
+    const packageJson = await readJsonFile("package.json");
+    return ({
+      ok: true,
+      app: "mercury-dashboard",
+      version: appVersion,
+      packageVersion: packageJson.version,
+      nodeVersion: process.version,
+      expectedClientAssetVersion
+    });
+  });
 
-    if (url.pathname === "/api/health" && req.method === "GET") {
-      const packageJson = await readJsonFile("package.json");
-      return sendJson(res, {
-        ok: true,
-        app: "mercury-dashboard",
-        version: appVersion,
-        packageVersion: packageJson.version,
-        nodeVersion: process.version,
-        expectedClientAssetVersion
-      });
+  router.add("GET", "/api/overview", async () => {
+    return await buildOverviewCached();
+  });
+
+  router.add("GET", "/api/preferences", async () => {
+    return ({ ok: true, preferences: await readPreferences() });
+  });
+
+  router.add("PATCH", "/api/preferences", async ({ body }) => {
+    return ({ ok: true, preferences: await updatePreferences(body.preferences || body) });
+  }, { body: true });
+
+  router.add("GET", "/api/product-context", async () => {
+    return await buildProductContext();
+  });
+
+  router.add("GET", "/api/update-check", async ({ query }) => {
+    const packageJson = await readJsonFile("package.json");
+    return await checkLatestRelease(packageJson.version, query.get("include_prerelease") === "true");
+  });
+
+  router.add("GET", "/api/diagnostics", async () => {
+    return await buildDiagnostics();
+  });
+
+  router.add("POST", "/api/maintenance/clean-dist", async () => {
+    await rm(join(root, "dist"), { recursive: true, force: true });
+    await appendLifecycleEvent({ action: "clean_dist", path: "dist", actor: "dashboard" });
+    return ({ ok: true, cleaned: "dist" });
+  });
+
+  router.add("POST", "/api/intake-feedback", async ({ body }) => {
+    const text = body.text || "";
+    const moduleVersion = INTAKE_FEEDBACK_VERSION;
+    if (!scoreContentQuick) {
+      return withStatus(503, { ok: false, error: "intake-feedback module unavailable" });
     }
+    const result = scoreContentQuick(text);
+    return ({ ok: true, moduleVersion, ...result });
+  }, { body: true });
 
-    if (url.pathname === "/api/overview" && req.method === "GET") {
-      return sendJson(res, await buildOverviewCached());
+  router.add("POST", "/api/extract-claims", async ({ body }) => {
+    const text = body.text || "";
+    if (!extractClaims) {
+      return withStatus(503, { ok: false, error: "intake-feedback module unavailable" });
     }
+    const claims = extractClaims(text);
+    return ({ ok: true, claims, count: claims.length });
+  }, { body: true });
 
-    if (url.pathname === "/api/preferences" && req.method === "GET") {
-      return sendJson(res, { ok: true, preferences: await readPreferences() });
+  router.add("POST", "/api/capture", async ({ body }) => {
+    if (!captureAiText) {
+      return withStatus(500, { ok: false, error: "capture module not available" });
     }
-
-    if (url.pathname === "/api/preferences" && req.method === "PATCH") {
-      const body = await readJson(req);
-      return sendJson(res, { ok: true, preferences: await updatePreferences(body.preferences || body) });
+    if (!String(body.text || "").trim()) {
+      return withStatus(400, { ok: false, error: "capture text is required" });
     }
+    return await captureAiText(body.text || "", {
+      sourceLabel: body.source || "dashboard-lite",
+      title: body.title || "Lite capture"
+    });
+  }, { body: true });
 
-    if (url.pathname === "/api/product-context" && req.method === "GET") {
-      return sendJson(res, await buildProductContext());
+  router.add("POST", "/api/submission/viewpoint", async ({ body }) => {
+    return await createViewpointSubmission(body);
+  }, { body: true });
+
+  router.add("POST", "/api/intake", async ({ body }) => {
+    return await createIntake(body);
+  }, { body: true });
+
+  router.add("POST", "/api/submission/promote", async ({ body }) => {
+    return await promoteViewpointSubmission(body.path);
+  }, { body: true });
+
+  router.add("GET", "/api/artifact", async ({ query }) => {
+    return await getArtifactDetail(query.get("path"));
+  });
+
+  router.add("PATCH", "/api/artifact", async ({ body }) => {
+    return await updateArtifact(body);
+  }, { body: true });
+
+  router.add("POST", "/api/artifact", async ({ body }) => {
+    return await createArtifact(body);
+  }, { body: true });
+
+  router.add("GET", "/api/lifecycle-log", async () => {
+    return ({ ok: true, events: await readLifecycleLog() });
+  });
+
+  router.add("POST", "/api/run", async ({ body }) => {
+    return await runAllowedCommand(body.script);
+  }, { body: true });
+
+  router.add("PATCH", "/api/model-provider", async ({ body }) => {
+    return await setActiveProvider(body.provider);
+  }, { body: true });
+
+  router.add("PATCH", "/api/execution-mode", async ({ body }) => {
+    return await setExecutionMode(body.mode);
+  }, { body: true });
+
+  router.add("PATCH", "/api/analysis-persona", async ({ body }) => {
+    return await setAnalysisPersona(body.persona);
+  }, { body: true });
+
+  router.add("PATCH", "/api/capability", async ({ body }) => {
+    return await setCapabilityStatus(body.key, body.status);
+  }, { body: true });
+
+  router.add("POST", "/api/goal/validate", async ({ body }) => {
+    if (!goalValidate) {
+      return withStatus(500, { ok: false, error: "goal-validator not available" });
     }
+    const result = goalValidate(body.text || "");
+    return ({ ok: true, result });
+  }, { body: true });
 
-    if (url.pathname === "/api/update-check" && req.method === "GET") {
-      const packageJson = await readJsonFile("package.json");
-      return sendJson(res, await checkLatestRelease(packageJson.version, url.searchParams.get("include_prerelease") === "true"));
+  router.add("POST", "/api/goal/create", async ({ body }) => {
+    if (!goalValidate || !goalCreateActionPlan) {
+      return withStatus(500, { ok: false, error: "goal-validator not available" });
     }
-
-    if (url.pathname === "/api/diagnostics" && req.method === "GET") {
-      return sendJson(res, await buildDiagnostics());
+    const validation = goalValidate(body.text || "");
+    if (!validation.ok) {
+      return ({ ok: false, result: validation });
     }
+    const filePath = await goalCreateActionPlan(validation);
+    validation.created_path = filePath;
+    return ({ ok: true, result: validation });
+  }, { body: true });
 
-    if (url.pathname === "/api/maintenance/clean-dist" && req.method === "POST") {
-      await rm(join(root, "dist"), { recursive: true, force: true });
-      await appendLifecycleEvent({ action: "clean_dist", path: "dist", actor: "dashboard" });
-      return sendJson(res, { ok: true, cleaned: "dist" });
+  router.add("GET", "/api/routes", () => ({ ok: true, routes: router.list() }));
+  return router;
+}
+
+export function createDashboardServer({ listenPort = port } = {}) {
+  const router = buildRouter();
+  const server = createServer(async (req, res) => {
+    try {
+      const url = new URL(req.url, "http://127.0.0.1");
+      guardRequest(req, server.address()?.port ?? listenPort);
+      if (await router.handle(req, res, url)) return;
+      if (req.method !== "GET" && req.method !== "HEAD") return sendJson(res, { ok: false, error: "Not found" }, 404);
+      return serveStatic(req, res, dashboardRoot, url.pathname);
+    } catch (error) {
+      const status = error instanceof HttpError ? error.status : 500;
+      if (!res.headersSent) sendJson(res, { ok: false, error: error.message }, status);
+      else res.end();
     }
+  });
+  return server;
+}
 
-    if (url.pathname === "/api/lite-audit" && req.method === "POST") {
-      const body = await readJson(req);
-      return sendJson(res, { ok: true, result: liteAudit(body.text || "") });
-    }
-
-    // ── v2.1.5: Quick intake-feedback (no LLM) ────────────────────────────────
-    if (url.pathname === "/api/intake-feedback" && req.method === "POST") {
-      const body = await readJson(req);
-      const text = body.text || "";
-      const moduleVersion = INTAKE_FEEDBACK_VERSION;
-      if (!scoreContentQuick) {
-        return sendJson(res, { ok: false, error: "intake-feedback module unavailable" }, 503);
-      }
-      const result = scoreContentQuick(text);
-      return sendJson(res, { ok: true, moduleVersion, ...result });
-    }
-
-    // ── v2.1.5: Extract discrete claims ──────────────────────────────────────
-    if (url.pathname === "/api/extract-claims" && req.method === "POST") {
-      const body = await readJson(req);
-      const text = body.text || "";
-      if (!extractClaims) {
-        return sendJson(res, { ok: false, error: "intake-feedback module unavailable" }, 503);
-      }
-      const claims = extractClaims(text);
-      return sendJson(res, { ok: true, claims, count: claims.length });
-    }
-
-    if (url.pathname === "/api/capture" && req.method === "POST") {
-      if (!captureAiText) {
-        return sendJson(res, { ok: false, error: "capture module not available" }, 500);
-      }
-      const body = await readJson(req);
-      if (!String(body.text || "").trim()) {
-        return sendJson(res, { ok: false, error: "capture text is required" }, 400);
-      }
-      return sendJson(res, await captureAiText(body.text || "", {
-        sourceLabel: body.source || "dashboard-lite",
-        title: body.title || "Lite capture"
-      }));
-    }
-
-    if (url.pathname === "/api/submission/viewpoint" && req.method === "POST") {
-      const body = await readJson(req);
-      return sendJson(res, await createViewpointSubmission(body));
-    }
-
-    if (url.pathname === "/api/intake" && req.method === "POST") {
-      const body = await readJson(req);
-      return sendJson(res, await createIntake(body));
-    }
-
-    if (url.pathname === "/api/submission/promote" && req.method === "POST") {
-      const body = await readJson(req);
-      return sendJson(res, await promoteViewpointSubmission(body.path));
-    }
-
-    if (url.pathname === "/api/artifact" && req.method === "GET") {
-      return sendJson(res, await getArtifactDetail(url.searchParams.get("path")));
-    }
-
-    if (url.pathname === "/api/artifact" && req.method === "PATCH") {
-      const body = await readJson(req);
-      return sendJson(res, await updateArtifact(body));
-    }
-
-    if (url.pathname === "/api/artifact" && req.method === "POST") {
-      const body = await readJson(req);
-      return sendJson(res, await createArtifact(body));
-    }
-
-    if (url.pathname === "/api/lifecycle-log" && req.method === "GET") {
-      return sendJson(res, { ok: true, events: await readLifecycleLog() });
-    }
-
-    if (url.pathname === "/api/run" && req.method === "POST") {
-      const body = await readJson(req);
-      return sendJson(res, await runAllowedCommand(body.script));
-    }
-
-    if (url.pathname === "/api/model-provider" && req.method === "PATCH") {
-      const body = await readJson(req);
-      return sendJson(res, await setActiveProvider(body.provider));
-    }
-
-    if (url.pathname === "/api/execution-mode" && req.method === "PATCH") {
-      const body = await readJson(req);
-      return sendJson(res, await setExecutionMode(body.mode));
-    }
-
-    if (url.pathname === "/api/analysis-persona" && req.method === "PATCH") {
-      const body = await readJson(req);
-      return sendJson(res, await setAnalysisPersona(body.persona));
-    }
-
-    if (url.pathname === "/api/capability" && req.method === "PATCH") {
-      const body = await readJson(req);
-      return sendJson(res, await setCapabilityStatus(body.key, body.status));
-    }
-
-    // ── /goal 照妖镜 API ──────────────────────────────────────
-
-    if (url.pathname === "/api/goal/validate" && req.method === "POST") {
-      if (!goalValidate) {
-        return sendJson(res, { ok: false, error: "goal-validator not available" }, 500);
-      }
-      const body = await readJson(req);
-      const result = goalValidate(body.text || "");
-      return sendJson(res, { ok: true, result });
-    }
-
-    if (url.pathname === "/api/goal/create" && req.method === "POST") {
-      if (!goalValidate || !goalCreateActionPlan) {
-        return sendJson(res, { ok: false, error: "goal-validator not available" }, 500);
-      }
-      const body = await readJson(req);
-      const validation = goalValidate(body.text || "");
-      if (!validation.ok) {
-        return sendJson(res, { ok: false, result: validation });
-      }
-      const filePath = await goalCreateActionPlan(validation);
-      validation.created_path = filePath;
-      return sendJson(res, { ok: true, result: validation });
-    }
-
-    return serveStatic(req, res, url.pathname);
-  } catch (error) {
-    sendJson(res, { ok: false, error: error.message }, 500);
-  }
-});
-
-server.listen(port, "127.0.0.1", () => {
-  console.log(`Mercury dashboard: http://127.0.0.1:${port}`);
-});
+const isMain = process.argv[1] && fileURLToPath(import.meta.url) === normalize(process.argv[1]);
+if (isMain) {
+  createDashboardServer().listen(port, "127.0.0.1", () => {
+    console.log(`GlimpseGate dashboard: http://127.0.0.1:${port}`);
+    console.log(`Classic GUI:           http://127.0.0.1:${port}/classic/`);
+  });
+}
 
 async function buildOverviewCached() {
   const now = Date.now();
@@ -851,73 +851,7 @@ async function buildDiagnostics() {
   };
 }
 
-function liteAudit(text) {
-  const value = String(text || "").trim();
-  const lower = value.toLowerCase();
-  const blockers = [];
-  const warnings = [];
-  const requiredFixes = [];
 
-  if (!value) {
-    blockers.push("empty_input");
-    requiredFixes.push("Paste an AI output or candidate memory before auditing.");
-  }
-  if (!/(source_ref|source refs|source:|来源|证据|引用)/i.test(value)) {
-    blockers.push("missing_source_refs");
-    requiredFixes.push("Add source_refs or quote the source material before durable use.");
-  }
-  if (!/(audit_ref|audit refs|review|reviewed|审计|复核)/i.test(value)) {
-    blockers.push("missing_audit_refs");
-    requiredFixes.push("Add audit_refs or record a review path before promotion.");
-  }
-  if (/(always|never|must|only|all future|guaranteed|proves|所有|全部|永远|从不|必须|唯一|必然|完全)/i.test(value)) {
-    blockers.push("overgeneralization");
-    requiredFixes.push("Narrow absolute language or add stronger evidence.");
-  }
-  if (lower.includes("because the ai summary") || lower.includes("summary says every blocker") || value.includes("AI 总结说")) {
-    blockers.push("circular_reasoning");
-    requiredFixes.push("Replace self-referential proof with independent evidence.");
-  }
-
-  let routingDecision = "accept";
-  if (blockers.includes("circular_reasoning") && blockers.includes("missing_source_refs")) {
-    routingDecision = "discard";
-  } else if (blockers.includes("missing_source_refs")) {
-    routingDecision = "quarantine";
-  } else if (blockers.length) {
-    routingDecision = "revise";
-  }
-
-  if (value.length > 1600) {
-    warnings.push("Long Lite input: consider converting it into a full Audit Packet for durable review.");
-  }
-
-  return {
-    routing_decision: routingDecision,
-    failure_modes: blockers,
-    evidence_gap: blockers.length ? blockers.join(", ") : "No structural evidence gap detected by Lite Mode.",
-    memory_pollution_risk: riskForLite({ routingDecision, blockers }),
-    required_fixes: requiredFixes,
-    provenance: {
-      ai_assisted: true,
-      human_reviewed: "declined",
-      audit_ref: "dashboard/lite.html"
-    }
-  };
-}
-
-function riskForLite({ routingDecision, blockers }) {
-  if (routingDecision === "accept") {
-    return "Low, assuming the pasted source and audit references are real and inspectable.";
-  }
-  if (blockers.includes("circular_reasoning")) {
-    return "A future agent may treat the AI output as proof of itself and close unresolved work.";
-  }
-  if (blockers.includes("missing_source_refs")) {
-    return "A plausible claim could become durable memory without inspectable source evidence.";
-  }
-  return "The claim may be useful, but it needs revision before long-term storage.";
-}
 
 async function checkLatestRelease(currentVersion, includePrerelease = false) {
   try {
@@ -1698,13 +1632,6 @@ async function setCapabilityStatus(key, status) {
   return { ok: true, key, status };
 }
 
-async function readJson(req) {
-  const chunks = [];
-  for await (const chunk of req) {
-    chunks.push(chunk);
-  }
-  return JSON.parse(Buffer.concat(chunks).toString("utf8") || "{}");
-}
 
 async function readJsonFile(path) {
   return JSON.parse(await readFile(join(root, path), "utf8"));
@@ -1714,56 +1641,4 @@ async function writeJsonFile(path, value) {
   await writeFile(join(root, path), `${JSON.stringify(value, null, 2)}\n`, "utf8");
 }
 
-function sendJson(res, payload, statusCode = 200) {
-  res.writeHead(statusCode, {
-    "Content-Type": "application/json; charset=utf-8",
-    "Cache-Control": "no-store"
-  });
-  res.end(JSON.stringify(payload, null, 2));
-}
 
-async function serveStatic(req, res, pathname) {
-  const requested = pathname === "/" ? "/index.html" : pathname;
-  const filePath = normalize(join(dashboardRoot, requested));
-
-  if (!filePath.startsWith(dashboardRoot)) {
-    res.writeHead(403);
-    res.end("Forbidden");
-    return;
-  }
-
-  const contentType = {
-    ".html": "text/html; charset=utf-8",
-    ".css": "text/css; charset=utf-8",
-    ".js": "text/javascript; charset=utf-8",
-    ".json": "application/json; charset=utf-8"
-  }[extname(filePath)] || "text/plain; charset=utf-8";
-
-  try {
-    const fileStat = await stat(filePath);
-    if (!fileStat.isFile()) {
-      res.writeHead(404, { "Content-Type": "text/plain; charset=utf-8" });
-      res.end("Not found");
-      return;
-    }
-  } catch {
-    res.writeHead(404, { "Content-Type": "text/plain; charset=utf-8" });
-    res.end("Not found");
-    return;
-  }
-
-  const stream = createReadStream(filePath);
-  stream.on("error", () => {
-    if (!res.headersSent) {
-      res.writeHead(500, { "Content-Type": "text/plain; charset=utf-8" });
-    }
-    res.end("Static file read failed");
-  });
-  res.writeHead(200, {
-    "Content-Type": contentType,
-    "Cache-Control": "no-store, no-cache, must-revalidate",
-    Pragma: "no-cache",
-    Expires: "0"
-  });
-  stream.pipe(res);
-}

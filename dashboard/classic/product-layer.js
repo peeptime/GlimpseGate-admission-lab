@@ -411,7 +411,7 @@ function radioField(label, path, value, options) {
 
 function swatchField(label, path, value) {
   const swatches = ["#7a1d1d", "#245b45", "#325c7a", "#7a4f1d", "#4c3f84", "#1f6b3a"];
-  return field(label, `<div class="swatches">${swatches.map((color) => `<button type="button" class="${color === value ? "active" : ""}" style="--swatch:${color}" aria-label="${color}" onclick="this.closest('.settings-field').querySelector('input').value='${color}'; this.closest('.settings-field').querySelector('input').dispatchEvent(new Event('input',{bubbles:true}))"></button>`).join("")}<input data-pref="${path}" value="${escapeAttr(value)}"></div>`);
+  return field(label, `<div class="swatches">${swatches.map((color) => `<button type="button" class="${color === value ? "active" : ""}" style="--swatch:${color}" aria-label="${color}" data-swatch="${color}"></button>`).join("")}<input data-pref="${path}" value="${escapeAttr(value)}"></div>`);
 }
 
 function readonlyField(label, value) {
@@ -793,3 +793,13 @@ function escapeHtml(value) {
 function escapeAttr(value) {
   return escapeHtml(value).replaceAll('"', "&quot;");
 }
+
+// 2.4.0: replaces an inline onclick (blocked by the dashboard CSP).
+document.addEventListener("click", (event) => {
+  const swatch = event.target.closest("[data-swatch]");
+  if (!swatch) return;
+  const input = swatch.closest(".settings-field")?.querySelector("input");
+  if (!input) return;
+  input.value = swatch.dataset.swatch;
+  input.dispatchEvent(new Event("input", { bubbles: true }));
+});

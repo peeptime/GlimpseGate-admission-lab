@@ -1,4 +1,4 @@
-export const MERCURY_RULESET_VERSION = "2026.05.10.1";
+export const MERCURY_RULESET_VERSION = "2026.09.26.1";
 
 export function createRuleVersionRecord(input = {}) {
   return {
