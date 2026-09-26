@@ -206,7 +206,7 @@ export function mountGate(root, { field }) {
             optionButtons.forEach((b) => b.setAttribute("aria-pressed", String(b === btn)));
             buildBtn.disabled = false;
           } }
-        }, h("b", o.id), h("span", o.label, mode ? ` → ${mode}` : "", h("em", o.action || "")));
+        }, h("b", o.id), h("span", o.label, mode ? ` → ${mode}` : "", h("em", o.action || ""), rightsPreview(o.admission_policy?.future_usage_policy)));
         optionButtons.push(btn);
         return btn;
       })));
@@ -299,6 +299,18 @@ export function mountGate(root, { field }) {
     destroy() { network.destroy(); field.set({ attract: null }); },
     relabel() { network.setLabels(netLabels()); }
   };
+}
+
+// What an option grants, shown before choosing. The fact permission is always
+// drawn locked: the contract only grants it once evidence or a named review
+// arrives (2.3.0 evidence condition). Preview only — the server decides.
+function rightsPreview(u) {
+  if (!u) return null;
+  const mark = (state, key) => h(`i.rp.${state}`, state === "locked" ? `${t(key)} · ${t("right.locked")}` : t(key));
+  return h("span.rights-preview",
+    mark(u.can_use_as_fact ? "locked" : "off", "right.fact"),
+    mark(u.can_participate_in_reasoning ? "on" : "off", "right.reason"),
+    mark(u.can_trigger_action ? "on" : "off", "right.action"));
 }
 
 function section(title, ...children) {

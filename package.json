@@ -1,7 +1,7 @@
 {
   "name": "@glimpsegate/admission-lab",
-  "version": "2.4.0",
-  "codename": "Gate GUI v3",
+  "version": "2.4.1",
+  "codename": "Mechanic Words",
   "releaseDate": "2026-09-26",
   "private": true,
   "type": "module",

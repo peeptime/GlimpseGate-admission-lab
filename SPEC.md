@@ -270,6 +270,7 @@ These are non-negotiable boundaries. Violations require a major version bump.
 
 | Date | Version | Change |
 |------|---------|--------|
+| 2026-09-26 | 2.4.1 | Display-layer copy rule (mechanic words, fewer adverbials), option permission preview, copy lint |
 | 2026-09-26 | 2.4.0 | Dashboard v3: SDK-backed admission API and contract UI, request guard + CSP, route table, node-network / fractal motion design, classic GUI at /classic/ |
 | 2026-09-26 | 2.3.0 | Restart after freeze: admission-contract evidence enforcement, source-ref classifier fix, reason explainability, SDK packaging + types, taxonomy audit, related-work re-verification |
 | 2026-05-20 | 2.2.0 | Added SPEC.md, CONTEXT.md, skill upgrades, legacy doc archive |
