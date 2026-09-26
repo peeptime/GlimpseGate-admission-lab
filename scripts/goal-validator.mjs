@@ -838,7 +838,14 @@ function printHelp() {
   console.log(lines.join("\n"));
 }
 
-main().catch((err) => {
-  console.error("Fatal:", err.message);
-  process.exit(1);
-});
+// Run the CLI only when executed directly. Before 2.4.0 main() ran on import,
+// so importing validate() from the dashboard printed help text and any CLI
+// error would call process.exit(1) inside the dashboard server process.
+const invokedDirectly = process.argv[1]
+  && (await import("node:url")).fileURLToPath(import.meta.url) === (await import("node:path")).resolve(process.argv[1]);
+if (invokedDirectly) {
+  main().catch((err) => {
+    console.error("Fatal:", err.message);
+    process.exit(1);
+  });
+}

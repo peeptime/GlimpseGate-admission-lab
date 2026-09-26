@@ -408,7 +408,12 @@ function mentionsCircularReasoning(claim, contextText) {
     || normalized.includes("self-referential")
     || normalized.includes("circular")
     || normalized.includes("循环论证")
-    || normalized.includes("自证");
+    || normalized.includes("自证")
+    // Absorbed from the former dashboard-only lite rules (v2.4.0), so the
+    // SDK is the single source of routing truth for every surface.
+    || normalized.includes("because the ai summary")
+    || normalized.includes("summary says every blocker")
+    || normalized.includes("ai 总结说");
 }
 
 function hasConflictingEvidence(packet, contextText) {
