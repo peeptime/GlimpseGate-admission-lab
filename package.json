@@ -45,7 +45,7 @@
     "audit:profile": "node scripts/profile_audit_packets.mjs",
     "report": "node scripts/generate_audit_reports.mjs",
     "audit:flow": "node scripts/simulate_memory_flow.mjs",
-    "test": "node scripts/test_audit_packets.mjs && node scripts/test_sdk_api.mjs && node scripts/test_governance.mjs && node scripts/test_evidence_chain.mjs && node scripts/test_admission_hardening.mjs",
+    "test": "node scripts/test_audit_packets.mjs && node scripts/test_sdk_api.mjs && node scripts/test_governance.mjs && node scripts/test_evidence_chain.mjs && node scripts/test_admission_hardening.mjs && npm run test:fidelity && npm run test:consumer",
     "test:fidelity": "node src/mercury-audit/test_fidelity_modules.mjs && node src/mercury-audit/test_fidelity_routing_integration.mjs",
     "test:sdk": "node scripts/test_sdk_api.mjs",
     "test:governance": "node scripts/test_governance.mjs",
@@ -81,7 +81,8 @@
     "start:ark": "node scripts/start_mercury_provider.mjs",
     "start:ark:legacy": "powershell -ExecutionPolicy Bypass -File scripts/start_mercury_ark.ps1",
     "test:hardening": "node scripts/test_admission_hardening.mjs",
-    "test:consumer": "node scripts/test_sdk_consumer.mjs"
+    "test:consumer": "node scripts/test_sdk_consumer.mjs",
+    "test:fast": "node scripts/test_audit_packets.mjs && node scripts/test_sdk_api.mjs && node scripts/test_governance.mjs && node scripts/test_evidence_chain.mjs && node scripts/test_admission_hardening.mjs"
   },
   "engines": {
     "node": ">=20"

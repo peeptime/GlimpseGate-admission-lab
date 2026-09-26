@@ -24,7 +24,7 @@ First iteration after the freeze since 2026-05-21. Focus: close gaps between wha
 - `package.json#files` / `types` / `main` / `exports` conditions — tarball shrinks from 441 files to 29.
 - Declared source levels: `primary::`, `traceable::`, `secondary::`, `ai::` prefixes (`declared: true` in the result).
 - `scripts/test_admission_hardening.mjs` (in `npm test`), `scripts/test_sdk_consumer.mjs` (pack → install → import, in CI).
-- `npm test` now also runs the evidence-chain suite; CI also runs `test:fidelity` and `test:consumer`.
+- `npm test` now also runs the evidence-chain, admission-hardening, fidelity and consumer-install suites, so CI (which calls `npm run test`) covers them without a workflow change. `npm run test:fast` skips the fidelity and consumer steps.
 - `docs/SDK-QUICKSTART.md` — integration guide.
 - `docs/ADMISSION-TAXONOMY.md` — axis analysis of memory object types, FM implementation coverage, FM → ISO/IEC 25012 mapping, Admiralty-code comparison for source levels, and the key open question.
 - CONTEXT.md terms: evidence condition, pending upgrade, declared source level, naming (GlimpseGate vs. Mercury).

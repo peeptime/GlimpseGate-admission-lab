@@ -48,9 +48,8 @@ not add surface area. It checked whether **what the method claims** matches
 ## Validation
 
 ```bash
-npm test
-npm run test:fidelity
-npm run test:consumer
+npm test          # includes test:fidelity and test:consumer
+npm run test:fast # quick local loop
 npm run validate
 npm run sync:check
 ```

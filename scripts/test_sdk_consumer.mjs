@@ -1,6 +1,7 @@
 // Packs the SDK and installs it into a throwaway project, the way an external
 // integrator would. Catches missing files in package.json#files and broken
-// exports. Not part of `npm test` because it shells out to npm.
+// exports. Runs as the last step of `npm test` (and therefore in CI, which
+// calls `npm run test`). Use `npm run test:fast` to skip it locally.
 import { mkdtempSync, writeFileSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join, dirname } from "node:path";

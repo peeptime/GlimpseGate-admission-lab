@@ -196,7 +196,7 @@ docs/                     # Architecture docs, iteration guides
 ### v2.3.0 Release Gate
 
 - [x] `npm run test` — includes evidence-chain and admission-hardening suites
-- [x] `npm run test:fidelity` and `npm run test:consumer` in CI
+- [x] `npm run test:fidelity` and `npm run test:consumer` in CI (via `npm test`; `ci.yml` unchanged)
 - [x] Admission contract enforces its declared `evidence_condition`
 - [x] Package name is npm-valid (`@glimpsegate/admission-lab`); `files` limits the tarball to the SDK
 - [x] Type declarations for the stable SDK surface
