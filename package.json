@@ -1,14 +1,31 @@
 {
-  "name": "@GlimpseGate/admission-lab",
-  "version": "2.2.0",
-  "codename": "SPEC-First + Shared Language",
-  "releaseDate": "2026-05-20",
+  "name": "@glimpsegate/admission-lab",
+  "version": "2.3.0",
+  "codename": "Restart: Admission Hardening",
+  "releaseDate": "2026-09-26",
   "private": true,
   "type": "module",
   "description": "Choice-gated knowledge admission protocol for deciding how AI-generated claims may enter memory.",
+  "main": "./src/mercury-audit/index.mjs",
+  "types": "./src/mercury-audit/index.d.ts",
   "exports": {
-    ".": "./src/mercury-audit/index.mjs"
+    ".": {
+      "types": "./src/mercury-audit/index.d.ts",
+      "import": "./src/mercury-audit/index.mjs",
+      "default": "./src/mercury-audit/index.mjs"
+    },
+    "./package.json": "./package.json"
   },
+  "files": [
+    "src/mercury-audit/",
+    "!src/mercury-audit/test_*.mjs",
+    "scripts/audit-core/",
+    "config/rule-routing.json",
+    "docs/SDK-QUICKSTART.md",
+    "README.md",
+    "README.en.md",
+    "LICENSE"
+  ],
   "scripts": {
     "check:upstream": "node scripts/check_upstream_mercury_agent.mjs",
     "dashboard": "node scripts/dashboard_server.mjs",
@@ -28,7 +45,7 @@
     "audit:profile": "node scripts/profile_audit_packets.mjs",
     "report": "node scripts/generate_audit_reports.mjs",
     "audit:flow": "node scripts/simulate_memory_flow.mjs",
-    "test": "node scripts/test_audit_packets.mjs && node scripts/test_sdk_api.mjs && node scripts/test_governance.mjs",
+    "test": "node scripts/test_audit_packets.mjs && node scripts/test_sdk_api.mjs && node scripts/test_governance.mjs && node scripts/test_evidence_chain.mjs && node scripts/test_admission_hardening.mjs",
     "test:fidelity": "node src/mercury-audit/test_fidelity_modules.mjs && node src/mercury-audit/test_fidelity_routing_integration.mjs",
     "test:sdk": "node scripts/test_sdk_api.mjs",
     "test:governance": "node scripts/test_governance.mjs",
@@ -62,7 +79,9 @@
     "goal:validate": "node scripts/goal-validator.mjs",
     "start:llm": "node scripts/start_mercury_provider.mjs",
     "start:ark": "node scripts/start_mercury_provider.mjs",
-    "start:ark:legacy": "powershell -ExecutionPolicy Bypass -File scripts/start_mercury_ark.ps1"
+    "start:ark:legacy": "powershell -ExecutionPolicy Bypass -File scripts/start_mercury_ark.ps1",
+    "test:hardening": "node scripts/test_admission_hardening.mjs",
+    "test:consumer": "node scripts/test_sdk_consumer.mjs"
   },
   "engines": {
     "node": ">=20"
