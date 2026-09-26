@@ -122,6 +122,12 @@ prose; do not rename identifiers without a major version.
 **Mercury Agent** (`cosmicstack-labs/mercury-agent`) is a separate, unrelated
 runtime — see `docs/MERCURY-AGENT-RELATIONSHIP.md`.
 
+### display vocabulary（界面用词）— added 2.4.1
+Friendly words used only in human-facing UI copy (zh): 存档 = accept, 返修 =
+revise, 仓库 = quarantine storage, 关卡 = gate check, 解锁条件 = evidence
+condition, 待解锁 = pending upgrade, 权限 = future usage policy. They explain;
+they never replace identifiers. Rules and full mapping: `docs/COPY-STYLE.md`.
+
 ---
 
 ## Routing Signal Types

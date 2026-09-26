@@ -32,6 +32,21 @@ check("v3 GUI pauses animation in background tabs", appText.includes("visibility
 check("v3 GUI supports zh and en", /zh:\s*\{/.test(appText) && /en:\s*\{/.test(appText));
 check("v3 GUI audits only through the SDK-backed admission API", appText.includes("/api/v1/admission/audit") && !appText.includes("/api/lite-audit"));
 
+// Copy rules (docs/COPY-STYLE.md)
+const i18nText = await read("dashboard/app/i18n.js");
+const zhBlock = /  zh: \{\n([\s\S]*?)\n  \},\n  en: \{/.exec(i18nText);
+const zh = zhBlock ? JSON.parse(`{${zhBlock[1]}}`) : {};
+const zhValues = Object.values(zh);
+const MEMES = ["GG", "gg", "666", "yyds", "YYDS", "绝绝子", "破防", "芭比Q", "泰裤辣", "摆烂", "躺平", "栓Q", "拿捏", "针不戳"];
+const longSentences = zhValues.flatMap((v) => v.split(/[。！？；\n]/)).filter((x) => (x.match(/[\u4e00-\u9fff]/g) || []).length > 24);
+const adverbialDe = zhValues.filter((v) => /[\u4e00-\u9fff]地[\u4e00-\u9fff]/.test(v.replace(/本地|地址|地图|地方|场地|土地/g, "")));
+check("zh copy parsed", zhValues.length > 50);
+check("copy uses mechanic words, not memes", !zhValues.some((v) => MEMES.some((m) => v.includes(m))));
+check(`zh sentences <= 24 CJK chars${longSentences.length ? ` (over: ${longSentences.slice(0, 2).join(" | ")})` : ""}`, longSentences.length === 0);
+check(`zh copy avoids 地-adverbials${adverbialDe.length ? ` (${adverbialDe[0]})` : ""}`, adverbialDe.length === 0);
+check("仓库 reserved for quarantine storage", zh["lib.title"] !== "仓库" && zh["nav.library"] !== "仓库");
+check("canonical route word stays visible in the verdict", appText.includes('h("p.verdict-word", word)') && appText.includes("setVerdict(res.decision, res.decision"));
+
 // Server architecture
 check("server uses a route table, not an if-chain", server.includes("createRouter()") && !/url\.pathname === "\/api\//.test(server));
 check("server guards state-changing requests", server.includes("guardRequest(") && http.includes("Cross-origin state change refused"));

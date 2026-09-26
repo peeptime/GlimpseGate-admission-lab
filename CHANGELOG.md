@@ -4,6 +4,29 @@
 
 Every release entry must carry an explicit provenance declaration. Legacy entries that cannot be reconstructed are marked as unverified instead of being silently treated as human-only.
 
+## 2.4.1 - Mechanic Words (2026-09-26)
+> Provenance: `[AI_GENERATED]` rule by project_owner, audit + implementation by Claude (Hyperagent); humanReviewed: declined; reviewer: project_owner_pending; audit_ref: docs/COPY-STYLE.md
+
+### Changed
+
+- zh UI copy rewritten under a new display-layer rule: game **mechanic** words (存档, 仓库, 关卡, 解锁, 接任务, 闯关) where they map onto a project mechanic; no memes; fewer adverbials; ≤ 24 CJK characters per sentence. Identifiers and the large canonical verdict word are unchanged.
+- en copy simplified (outcome first; *locked / unlock*).
+- 仓库 reserved for quarantine storage; the artifact view is 资料库. The run button is 闯关, not 过关 (pressing it is not passing).
+
+### Added
+
+- A/B/C options preview the permissions they grant. *Cite as fact* is drawn locked, because the contract only grants it with evidence or a named review.
+- `docs/COPY-STYLE.md` (rule, mapping, rejected ideas), CONTEXT.md "display vocabulary".
+- `dashboard:check` copy rules: meme blocklist, sentence length, 地-adverbials, 仓库 reservation, canonical verdict word visible (27 checks total).
+
+### Not done (deliberately)
+
+- A "recommended option" would lower the threshold most, but it means the system choosing for the human, against the project's premise and the SPEC stop list.
+
+### Known Issues (v2.4.1)
+
+- Adverbial density is only partly machine-checked (地-adverbials, length); the rest relies on review.
+
 ## 2.4.0 - Gate GUI v3 (2026-09-26)
 > Provenance: `[AI_GENERATED]` drafted_by: Claude (Hyperagent) at project_owner's request; humanReviewed: declined; reviewer: project_owner_pending; audit_ref: docs/DASHBOARD.md
 
