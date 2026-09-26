@@ -357,6 +357,16 @@ details.evidence[open] summary::after { content: "−"; }
 .rp.on { color: var(--ink-2); } .rp.on::before { background: currentColor; }
 .rp.off { color: var(--ink-4); text-decoration: line-through; }
 .rp.locked { color: var(--revise); } .rp.locked::before { border-style: dashed; }
+.lt .orig { display: none; }
+.show-original .lt .l10n { display: none; }
+.show-original .lt .orig { display: inline; }
+.lt-mark { margin-left: 4px; font: 500 9px/1 var(--mono); color: var(--ink-3); letter-spacing: 0.04em; vertical-align: super; }
+.lt-mark.fb { color: var(--revise); }
+/* The lang bar states the translation count once; per-line marks show only the exception (EN fallback). */
+.lt-mark:not(.fb) { display: none; }
+.lt[title] { text-decoration: underline dotted var(--ink-4); text-underline-offset: 3px; }
+.lang-bar { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; padding: 8px 12px; border: 1px dashed var(--line-2); }
+.lang-bar .hint { flex: 1; }
 .option-extra { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 4px; }
 
 .contract { border: 1px solid var(--line-2); display: grid; grid-template-columns: 1.1fr 1fr; }

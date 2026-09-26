@@ -4,6 +4,28 @@
 
 Every release entry must carry an explicit provenance declaration. Legacy entries that cannot be reconstructed are marked as unverified instead of being silently treated as human-only.
 
+## 2.5.0 - Feedback Language (2026-09-26)
+> Provenance: `[AI_GENERATED]` direction by project_owner, implementation by Claude (Hyperagent); humanReviewed: declined; reviewer: project_owner_pending; audit_ref: scripts/dashboard/feedback-lang.mjs
+
+### Added
+
+- **Feedback language tagging per ecosystem.** `POST /api/v1/admission/audit` and `/contract` accept `lang`: `zh-CN` (Chinese users: mechanic-word register), `en` (developers: canonical imperative), `agent` (tooling: canonical text + stable codes). Additive: canonical fields unchanged; `*_l10n` siblings carry `{ text, lang, register, translated, fallback, code, original }`, plus a `feedback_lang` coverage summary.
+- **Translation is framing, not source.** The Gate view marks translated lines 译, keeps the canonical text, and has a one-click 原文 / 译文 toggle. Untranslated text in a zh view is marked EN instead of passing as translated.
+- zh catalog for all SDK feedback (fixes, required evidence, gaps, options, actions, warnings, contract unlock requirements) and a reverse zh→en catalog for the SDK's Chinese-only human-review checklist.
+- Stable feedback codes (`fix.*`, `gap.*`, `option.*`, `action.*`, `checklist.*`, …) for agents.
+- `scripts/test_feedback_lang.mjs` (in `npm test`): statically scans the SDK and fails on any feedback string without a translation in the needed direction (76 literals + 6 templates), and applies COPY-STYLE rules to the zh catalog.
+- Language switch re-runs and re-localizes the current result instead of clearing it.
+- `docs/BLUEPRINT-2.6.0.md` (Disagreement Ledger), `docs/BLUEPRINT-2.7.0.md` (revision state + agent surface, conditional), `docs/OBSERVATION-MODE.md` (watch list, triggers, expectation management), `docs/observations/`.
+
+### Found
+
+- The SDK is itself mixed-language: the human-review checklist in `audit_rules.mjs` is Chinese-only, so English developers and agents received Chinese. Handled by the reverse catalog; changing the SDK text itself is left for 2.7.0 Part B.
+
+### Known Issues (v2.5.0)
+
+- Translations are the assistant's; they follow COPY-STYLE but have not been reviewed by the owner.
+- `lite.html` and `/api/lite-audit` are not localized.
+
 ## 2.4.1 - Mechanic Words (2026-09-26)
 > Provenance: `[AI_GENERATED]` rule by project_owner, audit + implementation by Claude (Hyperagent); humanReviewed: declined; reviewer: project_owner_pending; audit_ref: docs/COPY-STYLE.md
 

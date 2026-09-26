@@ -2,7 +2,7 @@
 // Everything shown comes from the SDK via /api/v1/admission/*.
 import { h, clear, toast, busy } from "../dom.js";
 import { api } from "../api.js";
-import { t } from "../i18n.js";
+import { t, getLang } from "../i18n.js";
 import { glyphSvg } from "../glyphs.js";
 import { createNetwork } from "../fx/network.js";
 import { clamp } from "../motion.js";
@@ -21,6 +21,7 @@ const MIN_SCAN_MS = 620; // long enough to read the scan, short enough not to st
 export function mountGate(root, { field }) {
   const saved = JSON.parse(sessionStorage.getItem(STORE) || "{}");
   const form = {
+    autorun: Boolean(saved.autorun),
     text: saved.text || "",
     source_refs: saved.source_refs || "",
     audit_refs: saved.audit_refs || "",
@@ -35,7 +36,7 @@ export function mountGate(root, { field }) {
   const material = h("textarea.material", {
     placeholder: t("gate.placeholder"), spellcheck: false, value: form.text, "aria-label": t("gate.title"),
     on: {
-      input: () => { form.text = material.value; persist(); energize(); },
+      input: () => { form.text = material.value; form.autorun = false; persist(); energize(); },
       keydown: (e) => { if ((e.metaKey || e.ctrlKey) && e.key === "Enter") { e.preventDefault(); run(); } }
     }
   });
@@ -103,6 +104,7 @@ export function mountGate(root, { field }) {
   function payload() {
     const lines = (s) => s.split(/\n/).map((x) => x.trim()).filter(Boolean);
     return {
+      lang: getLang() === "zh" ? "zh-CN" : "en",
       text: form.text,
       source_refs: lines(form.source_refs),
       audit_refs: lines(form.audit_refs),
@@ -124,12 +126,14 @@ export function mountGate(root, { field }) {
         const res = await api.audit(input);
         await wait(Math.max(0, MIN_SCAN_MS - (performance.now() - started)));
         lastInput = input; lastResult = res; selection = null;
+        form.autorun = true; persist(); // restore (and re-localize) the result on remount / language switch
         network.resolve(res.checks, res.decision);
         field.set({ attract: null, route: res.decision });
         renderResult(res);
       } catch (err) {
         network.idle();
         field.set({ attract: null });
+        form.autorun = false; persist();
         renderError(err.message);
       }
     });
@@ -173,7 +177,8 @@ export function mountGate(root, { field }) {
       section(t("gate.checks"),
         h("div.checks", res.checks.map((c) => h(`div.check.${c.pass ? "pass" : "fail"}`,
           h("strong", t(`check.${c.id}`)), h("span", c.detail))))),
-      res.required_fixes.length ? section(t("gate.fixes"), h("ul.fixes", res.required_fixes.map((f) => h("li", f)))) : null,
+      langBar(res.feedback_lang),
+      res.required_fixes.length ? section(t("gate.fixes"), h("ul.fixes", (res.required_fixes_l10n || res.required_fixes).map((f) => h("li", lt(f))))) : null,
       res.reasons.length ? h("div.chips", res.reasons.map((r) => h("span.chip", r))) : null,
       admitSection(res),
       h("div#contractSlot")
@@ -182,13 +187,9 @@ export function mountGate(root, { field }) {
 
   function admitSection(res) {
     let choices = res.chain.suggested_choices || [];
-    const gapText = Object.fromEntries((res.chain.missing_evidence || []).map((g) => [g.id, g.description]));
+    const gapText = Object.fromEntries((res.chain.missing_evidence || []).map((g) => [g.id, (g.description_l10n || [g.description]).map(lt)]));
     if (!choices.length) {
-      choices = [{ gap_id: "human_review", options: [
-        { id: "A", label: "Admit with stronger evidence", action: "Supply evidence refs or a named review." },
-        { id: "B", label: "Admit as limited knowledge", action: "Usable in reasoning, never as fact." },
-        { id: "C", label: "Keep unresolved", action: "Record as an open question." }
-      ] }];
+      choices = [{ gap_id: "human_review", options: ["A", "B", "C"].map((id) => ({ id, label: t(`hr.${id}.label`), action: t(`hr.${id}.action`) })) }];
     }
     const buildBtn = h("button.btn.primary", { type: "button", disabled: true, on: { click: () => build(buildBtn) } }, t("gate.build"));
     const optionButtons = [];
@@ -206,7 +207,7 @@ export function mountGate(root, { field }) {
             optionButtons.forEach((b) => b.setAttribute("aria-pressed", String(b === btn)));
             buildBtn.disabled = false;
           } }
-        }, h("b", o.id), h("span", o.label, mode ? ` → ${mode}` : "", h("em", o.action || ""), rightsPreview(o.admission_policy?.future_usage_policy)));
+        }, h("b", o.id), h("span", lt(o.label_l10n || o.label), mode ? ` → ${mode}` : "", h("em", lt(o.action_l10n || o.action || "")), rightsPreview(o.admission_policy?.future_usage_policy)));
         optionButtons.push(btn);
         return btn;
       })));
@@ -240,12 +241,12 @@ export function mountGate(root, { field }) {
     await busy(btn, async () => {
       try {
         const res = await api.contract(lastInput, sel);
-        renderContract(res.contract);
+        renderContract(res.contract, res.l10n);
       } catch (err) { toast(err.message, "bad"); }
     });
   }
 
-  function renderContract(c) {
+  function renderContract(c, l10n = {}) {
     const slot = body.querySelector("#contractSlot");
     const u = c.future_usage_policy;
     const right = (on, key) => h(`div.right.${on ? "on" : "off"}`, h("i"), t(key));
@@ -264,7 +265,7 @@ export function mountGate(root, { field }) {
       c.pending_upgrade ? h("div.pending",
         h("strong", t("gate.pending")),
         h("span.muted", t("gate.pendingWhy", { req: c.pending_upgrade.requested_object_type })),
-        h("ul", c.pending_upgrade.requires.map((r) => h("li", r)))) : null,
+        h("ul", (l10n.pending_requires || c.pending_upgrade.requires).map((r) => h("li", lt(r))))) : null,
       h("div.contract-foot",
         h("button.btn.small", { type: "button", on: { click: () => copy(JSON.stringify(c, null, 2)) } }, t("gate.copyJson")),
         h("button.btn.small", { type: "button", on: { click: () => copy(markdown(c)) } }, t("gate.copyMd"))));
@@ -299,6 +300,33 @@ export function mountGate(root, { field }) {
     destroy() { network.destroy(); field.set({ attract: null }); },
     relabel() { network.setLabels(netLabels()); }
   };
+}
+
+// Language-tagged feedback. A translation is framing, not source: translated
+// text carries a 译 mark and its canonical English; untranslated text in a zh
+// view is marked EN. The result's 原文 toggle swaps every tagged line at once.
+function lt(item) {
+  if (item === null || item === undefined) return "";
+  if (typeof item !== "object") return String(item);
+  const mark = item.translated ? h("sup.lt-mark", { title: "translated · canonical English kept" }, t("lt.translated"))
+    : item.fallback ? h("sup.lt-mark.fb", { title: "no translation yet · canonical text" }, "EN") : null;
+  if (!item.translated) return h("span.lt", item.text, mark);
+  return h("span.lt", { title: item.original, "data-code": item.code || "" },
+    h("span.l10n", item.text), h("span.orig", item.original), mark);
+}
+
+function langBar(fl) {
+  if (!fl || fl.requested !== "zh-CN") return null;
+  const btn = h("button.btn.ghost.small", { type: "button" }, t("lt.showOriginal"));
+  btn.addEventListener("click", () => {
+    const root = btn.closest(".result");
+    const on = root.classList.toggle("show-original");
+    btn.textContent = on ? t("lt.showTranslated") : t("lt.showOriginal");
+  });
+  return h("div.lang-bar",
+    h("span.label", `${fl.lang} · ${fl.register}`),
+    h("span.hint", t("lt.note", { n: fl.translated, f: fl.fallback })),
+    btn);
 }
 
 // What an option grants, shown before choosing. The fact permission is always

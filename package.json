@@ -1,7 +1,7 @@
 {
   "name": "@glimpsegate/admission-lab",
-  "version": "2.4.1",
-  "codename": "Mechanic Words",
+  "version": "2.5.0",
+  "codename": "Feedback Language",
   "releaseDate": "2026-09-26",
   "private": true,
   "type": "module",
@@ -45,7 +45,7 @@
     "audit:profile": "node scripts/profile_audit_packets.mjs",
     "report": "node scripts/generate_audit_reports.mjs",
     "audit:flow": "node scripts/simulate_memory_flow.mjs",
-    "test": "node scripts/test_audit_packets.mjs && node scripts/test_sdk_api.mjs && node scripts/test_governance.mjs && node scripts/test_evidence_chain.mjs && node scripts/test_admission_hardening.mjs && node scripts/test_dashboard_api.mjs && npm run test:fidelity && npm run test:consumer",
+    "test": "node scripts/test_audit_packets.mjs && node scripts/test_sdk_api.mjs && node scripts/test_governance.mjs && node scripts/test_evidence_chain.mjs && node scripts/test_admission_hardening.mjs && node scripts/test_dashboard_api.mjs && node scripts/test_feedback_lang.mjs && npm run test:fidelity && npm run test:consumer",
     "test:fidelity": "node src/mercury-audit/test_fidelity_modules.mjs && node src/mercury-audit/test_fidelity_routing_integration.mjs",
     "test:sdk": "node scripts/test_sdk_api.mjs",
     "test:governance": "node scripts/test_governance.mjs",
@@ -82,8 +82,9 @@
     "start:ark:legacy": "powershell -ExecutionPolicy Bypass -File scripts/start_mercury_ark.ps1",
     "test:hardening": "node scripts/test_admission_hardening.mjs",
     "test:consumer": "node scripts/test_sdk_consumer.mjs",
-    "test:fast": "node scripts/test_audit_packets.mjs && node scripts/test_sdk_api.mjs && node scripts/test_governance.mjs && node scripts/test_evidence_chain.mjs && node scripts/test_admission_hardening.mjs && node scripts/test_dashboard_api.mjs",
-    "test:dashboard": "node scripts/test_dashboard_api.mjs"
+    "test:fast": "node scripts/test_audit_packets.mjs && node scripts/test_sdk_api.mjs && node scripts/test_governance.mjs && node scripts/test_evidence_chain.mjs && node scripts/test_admission_hardening.mjs && node scripts/test_dashboard_api.mjs && node scripts/test_feedback_lang.mjs",
+    "test:dashboard": "node scripts/test_dashboard_api.mjs",
+    "test:feedback-lang": "node scripts/test_feedback_lang.mjs"
   },
   "engines": {
     "node": ">=20"

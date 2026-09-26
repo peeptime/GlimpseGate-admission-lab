@@ -193,6 +193,20 @@ docs/                     # Architecture docs, iteration guides
 
 ## 7. Acceptance Criteria
 
+### v2.5.0 Release Gate
+
+- [x] Every SDK feedback string has a translation in the direction its readers need (coverage test)
+- [x] Canonical fields unchanged; localization is additive (`*_l10n`)
+- [x] Translated text is marked and the original is always reachable
+- [x] Blueprints for 2.6.0 and 2.7.0 with triggers and cancel conditions
+- [ ] Owner review of zh translations
+
+### Observation mode (after 2.5.0)
+
+Feature work pauses. Next work is chosen by `docs/OBSERVATION-MODE.md`:
+default 2.6.0 at the owner's pace; 2.7.0 parts only on their triggers.
+Bug and security fixes remain allowed.
+
 ### v2.4.0 Release Gate
 
 - [x] Every GUI audit path uses the SDK (`/api/v1/admission/*`, `/api/lite-audit`)
@@ -270,6 +284,7 @@ These are non-negotiable boundaries. Violations require a major version bump.
 
 | Date | Version | Change |
 |------|---------|--------|
+| 2026-09-26 | 2.5.0 | Feedback language tagging per ecosystem (zh-CN / en / agent), translation marking, coverage test; blueprints 2.6.0–2.7.0; observation mode |
 | 2026-09-26 | 2.4.1 | Display-layer copy rule (mechanic words, fewer adverbials), option permission preview, copy lint |
 | 2026-09-26 | 2.4.0 | Dashboard v3: SDK-backed admission API and contract UI, request guard + CSP, route table, node-network / fractal motion design, classic GUI at /classic/ |
 | 2026-09-26 | 2.3.0 | Restart after freeze: admission-contract evidence enforcement, source-ref classifier fix, reason explainability, SDK packaging + types, taxonomy audit, related-work re-verification |
